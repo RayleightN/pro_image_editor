@@ -82,6 +82,28 @@ class LayerInteraction {
   /// TextLayers or WidgetLayers when the onTapEditSticker callback is set.
   bool enableEdit;
 
+  /// Enables or disables all interaction capabilities for a layer.
+  ///
+  /// The following interactions can be enabled or disabled:
+  /// - Editing
+  /// - Moving
+  /// - Scaling
+  /// - Rotating
+  /// - Selection
+  ///
+  /// Each interaction is controlled by the `value` parameter.
+  ///
+  /// Parameters:
+  /// - `value` (bool): The value to set for enabling or disabling the
+  ///   interactions.
+  void toggleAll(bool enableInteraction) {
+    enableEdit = enableInteraction;
+    enableMove = enableInteraction;
+    enableScale = enableInteraction;
+    enableRotate = enableInteraction;
+    enableSelection = enableInteraction;
+  }
+
   /// Creates a copy of this [LayerInteraction] with optional overrides.
   ///
   /// - [enableMove]: If provided, overrides the current `enableMove` setting.

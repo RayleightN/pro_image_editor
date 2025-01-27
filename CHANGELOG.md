@@ -1,5 +1,8 @@
 # Changelog
 
+# 8.1.0
+- **FEAT**(layer): Added new methods `lockAllLayers` and `unlockAllLayers` to the main editor, enabling direct locking or unlocking of all layers.
+
 # 8.0.4
 - **FIX**(export/import): Resolve an issue where exported stickers within the JSON file could no longer be imported. Resolves issue [#334](https://github.com/hm21/pro_image_editor/issues/334)
 

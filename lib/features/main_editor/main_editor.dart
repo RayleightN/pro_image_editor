@@ -1864,6 +1864,49 @@ class ProImageEditorState extends State<ProImageEditor>
     );
   }
 
+  /// Locks all layers in the editor.
+  ///
+  /// If [onlyCurrentHistory] is set to `true`, only the layers in the current
+  /// history state will be locked.
+  ///
+  /// Parameters:
+  /// - [onlyCurrentHistory]: A boolean value indicating whether to lock only
+  ///   the layers in the current history state. Defaults to `false`.
+  ///
+  /// See also:
+  /// - [unlockAllLayers] to unlock all layers.
+  void lockAllLayers({
+    bool onlyCurrentHistory = false,
+  }) {
+    stateManager.updateLayerInteraction(
+      enableInteraction: false,
+      onlyCurrentHistory: onlyCurrentHistory,
+    );
+    selectedLayerIndex = -1;
+    layerInteractionManager.selectedLayerId = '';
+    _controllers.uiLayerCtrl.add(null);
+  }
+
+  /// Unlocks all layers in the editor.
+  ///
+  /// If [onlyCurrentHistory] is set to `true`, only the layers in the current
+  /// history state will be unlocked.
+  ///
+  /// Parameters:
+  /// - [onlyCurrentHistory]: A boolean value indicating whether to unlock only
+  ///   the layers in the current history state. Defaults to `false`.
+  ///
+  /// See also:
+  /// - [lockAllLayers] to lock all layers.
+  void unlockAllLayers({
+    bool onlyCurrentHistory = false,
+  }) {
+    stateManager.updateLayerInteraction(
+      enableInteraction: true,
+      onlyCurrentHistory: onlyCurrentHistory,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     _theme = configs.theme ??

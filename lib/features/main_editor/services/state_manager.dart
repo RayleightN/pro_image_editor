@@ -254,4 +254,37 @@ class StateManager {
     historyPointer = _historyPointer - 1;
     updateActiveItems();
   }
+
+  /// Locks or unlocks all layers based on the provided parameters.
+  ///
+  /// This method iterates through either the active layers or the entire state
+  /// history and toggles the lock state of each layer's interaction.
+  ///
+  /// Parameters:
+  /// - `enableInteraction` (required): A boolean value indicating whether to
+  ///   lock (`false`) or unlock (`true`) the layers.
+  /// - `onlyCurrentHistory` (required): A boolean value indicating whether to
+  ///   apply the lock/unlock operation only to the current history (`true`)
+  ///   or to all state history (`false`).
+  ///
+  /// If `onlyCurrentHistory` is `true`, the method will only affect the
+  /// active layers.
+  /// If `onlyCurrentHistory` is `false`, the method will iterate through all
+  /// layers in the state history and apply the lock/unlock operation.
+  void updateLayerInteraction({
+    required bool enableInteraction,
+    required bool onlyCurrentHistory,
+  }) {
+    if (onlyCurrentHistory) {
+      for (Layer layer in activeLayers) {
+        layer.interaction.toggleAll(enableInteraction);
+      }
+    } else {
+      for (var history in stateHistory) {
+        for (var layer in history.layers) {
+          layer.interaction.toggleAll(enableInteraction);
+        }
+      }
+    }
+  }
 }
