@@ -1,5 +1,6 @@
 # Changelog
 
+
 # 8.1.0
 - **FEAT**(layer): Added new methods `lockAllLayers` and `unlockAllLayers` to the main editor, enabling direct locking or unlocking of all layers.
 
