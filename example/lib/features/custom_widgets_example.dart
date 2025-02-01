@@ -94,11 +94,11 @@ class _CustomWidgetsExampleState extends State<CustomWidgetsExample>
 
   @override
   void initState() {
+    super.initState();
     preCacheImage(networkUrl: _url);
     _bottomBarScrollCtrl = ScrollController();
     _paintBottomBarScrollCtrl = ScrollController();
     _cropBottomBarScrollCtrl = ScrollController();
-    super.initState();
   }
 
   @override
@@ -794,7 +794,7 @@ class _CustomWidgetsExampleState extends State<CustomWidgetsExample>
           scrollDirection: Axis.horizontal,
           child: ConstrainedBox(
             constraints:
-                BoxConstraints(minWidth: MediaQuery.of(context).size.width),
+                BoxConstraints(minWidth: MediaQuery.sizeOf(context).width),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: List.generate(
@@ -848,7 +848,7 @@ class _CustomWidgetsExampleState extends State<CustomWidgetsExample>
             scrollDirection: Axis.horizontal,
             child: ConstrainedBox(
               constraints: BoxConstraints(
-                minWidth: min(MediaQuery.of(context).size.width, 500),
+                minWidth: min(MediaQuery.sizeOf(context).width, 500),
                 maxWidth: 500,
               ),
               child: Builder(builder: (context) {
