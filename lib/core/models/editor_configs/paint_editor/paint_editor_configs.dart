@@ -34,6 +34,7 @@ export 'censor_configs.dart';
 ///   enableModeCircle = true,
 ///   enableModeDashLine = true,
 ///   enableModeBlur = true,
+///   enableModePixelate = true,
 ///   enableModeEraser = true,
 ///   initialFill: false,
 ///   showColorPicker: true,
@@ -66,6 +67,7 @@ class PaintEditorConfigs {
     this.enableModeCircle = true,
     this.enableModeDashLine = true,
     this.enableModeBlur = true,
+    this.enableModePixelate = true,
     this.enableModeEraser = true,
     this.canToggleFill = true,
     this.canChangeLineWidth = true,
@@ -103,31 +105,31 @@ class PaintEditorConfigs {
   final bool enableZoom;
 
   /// Indicating whether the free-style drawing option is enabled.
-  @Deprecated('Use enableFreeStyle instead.')
+  @Deprecated('Use enableModeFreeStyle instead.')
   final bool? hasOptionFreeStyle;
 
   /// Indicating whether the arrow drawing option is enabled.
-  @Deprecated('Use enableArrow instead.')
+  @Deprecated('Use enableModeArrow instead.')
   final bool? hasOptionArrow;
 
   /// Indicating whether the line drawing option is enabled.
-  @Deprecated('Use enableLine instead.')
+  @Deprecated('Use enableModeLine instead.')
   final bool? hasOptionLine;
 
   /// Indicating whether the rectangle drawing option is enabled.
-  @Deprecated('Use enableRect instead.')
+  @Deprecated('Use enableModeRect instead.')
   final bool? hasOptionRect;
 
   /// Indicating whether the circle drawing option is enabled.
-  @Deprecated('Use enableCircle instead.')
+  @Deprecated('Use enableModeCircle instead.')
   final bool? hasOptionCircle;
 
   /// Indicating whether the dash line drawing option is enabled.
-  @Deprecated('Use enableDashLine instead.')
+  @Deprecated('Use enableModeDashLine instead.')
   final bool? hasOptionDashLine;
 
   /// Indicating whether the eraser option is enabled.
-  @Deprecated('Use enableEraser instead.')
+  @Deprecated('Use enableModeEraser instead.')
   final bool? hasOptionEraser;
 
   /// Indicating whether the free-style drawing option is enabled.
@@ -150,6 +152,13 @@ class PaintEditorConfigs {
 
   /// Indicating whether the blur drawing option is enabled.
   final bool enableModeBlur;
+
+  /// Indicating whether the pixelate drawing option is enabled.
+  ///
+  /// **IMPORTANT**: This mode is only supported when using the Impeller
+  /// rendering engine. On all other platforms, it will automatically be
+  /// set to `false`.
+  final bool enableModePixelate;
 
   /// Indicating whether the eraser option is enabled.
   final bool enableModeEraser;
@@ -284,6 +293,7 @@ class PaintEditorConfigs {
     bool? enableModeCircle,
     bool? enableModeDashLine,
     bool? enableModeBlur,
+    bool? enableModePixelate,
     bool? enableModeEraser,
     bool? canToggleFill,
     bool? canChangeLineWidth,
@@ -323,6 +333,7 @@ class PaintEditorConfigs {
       enableModeCircle: enableModeCircle ?? this.enableModeCircle,
       enableModeDashLine: enableModeDashLine ?? this.enableModeDashLine,
       enableModeBlur: enableModeBlur ?? this.enableModeBlur,
+      enableModePixelate: enableModePixelate ?? this.enableModePixelate,
       enableModeEraser: enableModeEraser ?? this.enableModeEraser,
       canToggleFill: canToggleFill ?? this.canToggleFill,
       canChangeLineWidth: canChangeLineWidth ?? this.canChangeLineWidth,
