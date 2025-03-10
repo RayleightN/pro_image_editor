@@ -130,8 +130,6 @@ class LayerWidget extends StatefulWidget with SimpleConfigsAccess {
 
 class _LayerWidgetState extends State<LayerWidget>
     with ImageEditorConvertedConfigs, SimpleConfigsAccessState {
-  final _layerKey = GlobalKey();
-
   /// The type of layer being represented.
   late _LayerType _layerType;
 
@@ -291,64 +289,64 @@ class _LayerWidgetState extends State<LayerWidget>
     Matrix4 transformMatrix = _calcTransformMatrix();
     var interaction = widget.layerData.interaction;
 
-    return Hero(
-      key: _layerKey,
-      createRectTween: (begin, end) => RectTween(begin: begin, end: end),
-      tag: widget.layerData.id,
-      child: Transform(
-        transform: transformMatrix,
-        alignment: Alignment.center,
-        child: LayerInteractionHelperWidget(
-          layerData: widget.layerData,
-          configs: configs,
-          callbacks: callbacks,
-          selected: widget.selected,
-          onEditLayer: widget.onEditTap,
-          isInteractive: widget.isInteractive,
-          onScaleRotateDown: (details) {
-            widget.onScaleRotateDown?.call(details, context.size ?? Size.zero);
-          },
-          onScaleRotateUp: widget.onScaleRotateUp,
-          onRemoveLayer: widget.onRemoveTap,
-          child: MouseRegion(
-            hitTestBehavior: HitTestBehavior.translucent,
-            cursor: _showMoveCursor && widget.layerData.interaction.enableMove
-                ? layerInteraction.style.hoverCursor
-                : MouseCursor.defer,
-            onEnter: (event) {
-              if (_layerType != _LayerType.canvas &&
-                  _layerType != _LayerType.text) {
-                setState(() {
-                  _showMoveCursor = true;
-                });
-              }
-            },
-            onExit: (event) {
-              switch (_layerType) {
-                case _LayerType.canvas:
-                  (widget.layerData as PaintLayer).item.hit = false;
-                  break;
-                case _LayerType.text:
-                  (widget.layerData as TextLayer).hit = false;
-                  break;
-                default:
-              }
+    return Transform(
+      transform: transformMatrix,
+      alignment: Alignment.center,
+      child: LayerInteractionHelperWidget(
+        layerData: widget.layerData,
+        configs: configs,
+        callbacks: callbacks,
+        selected: widget.selected,
+        onEditLayer: widget.onEditTap,
+        isInteractive: widget.isInteractive,
+        onScaleRotateDown: (details) {
+          widget.onScaleRotateDown?.call(details, context.size ?? Size.zero);
+        },
+        onScaleRotateUp: widget.onScaleRotateUp,
+        onRemoveLayer: widget.onRemoveTap,
+        child: MouseRegion(
+          hitTestBehavior: HitTestBehavior.translucent,
+          cursor: _showMoveCursor && widget.layerData.interaction.enableMove
+              ? layerInteraction.style.hoverCursor
+              : MouseCursor.defer,
+          onEnter: (event) {
+            if (_layerType != _LayerType.canvas &&
+                _layerType != _LayerType.text) {
               setState(() {
-                _showMoveCursor = false;
+                _showMoveCursor = true;
               });
-            },
-            child: GestureDetector(
+            }
+          },
+          onExit: (event) {
+            switch (_layerType) {
+              case _LayerType.canvas:
+                (widget.layerData as PaintLayer).item.hit = false;
+                break;
+              case _LayerType.text:
+                (widget.layerData as TextLayer).hit = false;
+                break;
+              default:
+            }
+            setState(() {
+              _showMoveCursor = false;
+            });
+          },
+          child: GestureDetector(
+            behavior: HitTestBehavior.translucent,
+            onSecondaryTapUp: isDesktop ? _onSecondaryTapUp : null,
+            onTap: interaction.enableSelection || interaction.enableEdit
+                ? _onTap
+                : null,
+            child: Listener(
               behavior: HitTestBehavior.translucent,
-              onSecondaryTapUp: isDesktop ? _onSecondaryTapUp : null,
-              onTap: interaction.enableSelection || interaction.enableEdit
-                  ? _onTap
-                  : null,
-              child: Listener(
-                behavior: HitTestBehavior.translucent,
-                onPointerDown: _onPointerDown,
-                onPointerUp: _onPointerUp,
-                child: Padding(
-                  padding: EdgeInsets.all(widget.selected ? 7.0 : 0),
+              onPointerDown: _onPointerDown,
+              onPointerUp: _onPointerUp,
+              child: Padding(
+                padding: EdgeInsets.all(widget.selected ? 7.0 : 0),
+                child: Hero(
+                  createRectTween: (begin, end) =>
+                      RectTween(begin: begin, end: end),
+                  tag: widget.layerData.id,
                   child: FittedBox(
                     child: _buildContent(),
                   ),
