@@ -1,6 +1,3 @@
-// ignore_for_file: deprecated_member_use_from_same_package
-// TODO: Remove deprecated values
-
 import 'dart:async';
 import 'dart:math';
 import 'dart:ui' as ui;
@@ -199,10 +196,8 @@ class ContentRecorderController {
     Widget? widget,
     OutputFormat? outputFormat,
   }) async {
-    if (!(_configs.generateImageInBackground ??
-            _configs.enableBackgroundGeneration) ||
-        !(_configs.generateInsideSeparateThread ??
-            _configs.enableIsolateGeneration)) {
+    if (!_configs.enableBackgroundGeneration ||
+        !_configs.enableIsolateGeneration) {
       return null;
     }
     ThreadCaptureState isolateCaptureState = ThreadCaptureState();
@@ -345,9 +340,7 @@ class ContentRecorderController {
 
     /// Check if the output size is too large.
     double outputRatio = imageInfos.pixelRatio;
-    if (!(_configs.captureOnlyDrawingBounds ?? _configs.cropToDrawingBounds) &&
-        context != null &&
-        context.mounted) {
+    if (!_configs.cropToDrawingBounds && context != null && context.mounted) {
       outputRatio =
           max(imageInfos.pixelRatio, MediaQuery.devicePixelRatioOf(context));
     }
@@ -358,8 +351,7 @@ class ContentRecorderController {
     );
     if (!isFormatSame || isOutputSizeTooLarge) {
       final ui.Image image = await decodeImageFromList(bytes);
-      if (_configs.generateInsideSeparateThread ??
-          _configs.enableIsolateGeneration) {
+      if (_configs.enableIsolateGeneration) {
         /// Recapture the image if the output format is incorrect or the output
         /// size is too large.
         if (kIsWeb || isOutputSizeTooLarge) {

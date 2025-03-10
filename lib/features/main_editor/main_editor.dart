@@ -1,6 +1,3 @@
-// ignore_for_file: deprecated_member_use_from_same_package
-// TODO: Remove deprecated values
-
 import 'dart:async';
 import 'dart:math';
 import 'dart:ui' as ui show Image;
@@ -906,8 +903,7 @@ class ProImageEditorState extends State<ProImageEditor>
     if (layerInteractionManager.rotateScaleLayerSizeHelper != null) {
       layerInteractionManager
         ..freeStyleHighPerformanceScaling =
-            paintEditorConfigs.freeStyleHighPerformanceScaling ??
-                paintEditorConfigs.enableFreeStyleHighPerformanceScaling ??
+            paintEditorConfigs.enableFreeStyleHighPerformanceScaling ??
                 !isDesktop
         ..calculateInteractiveButtonScaleRotate(
           configs: configs,
@@ -932,8 +928,7 @@ class ProImageEditorState extends State<ProImageEditor>
     if (details.pointerCount == 1) {
       layerInteractionManager
         ..freeStyleHighPerformanceMoving =
-            paintEditorConfigs.freeStyleHighPerformanceMoving ??
-                paintEditorConfigs.enableFreeStyleHighPerformanceMoving ??
+            paintEditorConfigs.enableFreeStyleHighPerformanceMoving ??
                 isWebMobile
         ..calculateMovement(
           editorScaleFactor: editorScaleFactor,
@@ -946,8 +941,7 @@ class ProImageEditorState extends State<ProImageEditor>
     } else if (details.pointerCount == 2) {
       layerInteractionManager
         ..freeStyleHighPerformanceScaling =
-            paintEditorConfigs.freeStyleHighPerformanceScaling ??
-                paintEditorConfigs.enableFreeStyleHighPerformanceScaling ??
+            paintEditorConfigs.enableFreeStyleHighPerformanceScaling ??
                 !isDesktop
         ..calculateScaleRotate(
           editorScaleFactor: editorScaleFactor,
@@ -1071,8 +1065,7 @@ class ProImageEditorState extends State<ProImageEditor>
     _checkInteractiveViewer();
     isSubEditorOpen = true;
 
-    if (paintEditorConfigs.freeStyleHighPerformanceHero ??
-        paintEditorConfigs.enableFreeStyleHighPerformanceHero) {
+    if (paintEditorConfigs.enableFreeStyleHighPerformanceHero) {
       layerInteractionManager.freeStyleHighPerformanceHero = true;
     }
 
@@ -1649,8 +1642,7 @@ class ProImageEditorState extends State<ProImageEditor>
   void doneEditing() async {
     if (_isProcessingFinalImage) return;
     if (!stateManager.canUndo && activeLayers.isEmpty) {
-      if (!(imageGenerationConfigs.allowEmptyEditCompletion ??
-          imageGenerationConfigs.allowEmptyEditingCompletion)) {
+      if (!imageGenerationConfigs.allowEmptyEditingCompletion) {
         return closeEditor();
       }
     }

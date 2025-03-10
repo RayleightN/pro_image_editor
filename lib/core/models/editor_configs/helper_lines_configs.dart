@@ -1,5 +1,3 @@
-// ignore_for_file: deprecated_member_use_from_same_package
-
 import '../styles/helper_line_style.dart';
 
 export '../styles/helper_line_style.dart';
