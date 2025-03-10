@@ -26,9 +26,9 @@ import '/shared/services/content_recorder/widgets/record_invisible_widget.dart';
 import '/shared/services/layer_transform_generator.dart';
 import '/shared/utils/debounce.dart';
 import '/shared/widgets/extended/extended_custom_paint.dart';
-import '/shared/widgets/extended/extended_mouse_cursor.dart';
 import '/shared/widgets/extended/extended_transform_scale.dart';
 import '/shared/widgets/extended/extended_transform_translate.dart';
+import '/shared/widgets/extended/mouse_region/extended_rebuild_mouse_region.dart';
 import '/shared/widgets/layer/layer_stack.dart';
 import '/shared/widgets/screen_resize_detector.dart';
 import '/shared/widgets/transform/transformed_content_generator.dart';
@@ -194,7 +194,7 @@ class CropRotateEditorState extends State<CropRotateEditor>
   /// Initialized to `Offset.zero`.
   Offset _editorScreenOffsetHelper = Offset.zero;
 
-  final _mouseCursorsKey = GlobalKey<ExtendedMouseRegionState>();
+  final _mouseCursorsKey = GlobalKey<ExtendedRebuildMouseRegionState>();
 
   /// A key used to access the state of the CropRotateGestureDetector widget.
   final _gestureKey = GlobalKey<CropRotateGestureDetectorState>();
@@ -2154,7 +2154,7 @@ class CropRotateEditorState extends State<CropRotateEditor>
   }
 
   Widget _buildMouseCursor({required Widget child}) {
-    return ExtendedMouseRegion(
+    return ExtendedRebuildMouseRegion(
       key: _mouseCursorsKey,
       initCursor: _cursor,
       child: child,

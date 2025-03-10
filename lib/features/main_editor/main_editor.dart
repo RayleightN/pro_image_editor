@@ -29,7 +29,6 @@ import '/shared/services/layer_transform_generator.dart';
 import '/shared/utils/debounce.dart';
 import '/shared/widgets/adaptive_dialog.dart';
 import '/shared/widgets/extended/extended_interactive_viewer.dart';
-import '/shared/widgets/extended/extended_mouse_cursor.dart';
 import '/shared/widgets/screen_resize_detector.dart';
 import '../filter_editor/types/filter_matrix.dart';
 import '../filter_editor/widgets/filter_generator.dart';
@@ -270,7 +269,6 @@ class ProImageEditorState extends State<ProImageEditor>
         SimpleConfigsAccessState,
         SimpleCallbacksAccessState,
         MainEditorGlobalKeys {
-  final _mouseCursorsKey = GlobalKey<ExtendedMouseRegionState>();
   final _bottomBarKey = GlobalKey();
   final _removeAreaKey = GlobalKey();
   final _backgroundImageColorFilterKey = GlobalKey<ColorFilterGeneratorState>();
@@ -2120,7 +2118,6 @@ class ProImageEditorState extends State<ProImageEditor>
       configs: configs,
       callbacks: callbacks,
       sizesManager: sizesManager,
-      mouseCursorsKey: _mouseCursorsKey,
       selectedLayerIndex: selectedLayerIndex,
       activeLayers: activeLayers,
       isSubEditorOpen: isSubEditorOpen,
