@@ -10,6 +10,9 @@
 - Removed the vibration package dependency and the support for internal feedback vibration. You can read more about this change and see example code on how to implement feedback support [here](https://github.com/hm21/pro_image_editor/discussions/386).
 - Removed all deprecated configuration settings.
 - Replaced `mime`, `image`, `archive`, and `crypto` packages with smaller, internally versions.
+- Moved configuration `locale` inside `EmojiEditorConfigs` to `I18nEmojiEditor`.
+- Changed the default behavior so that emoji search text is no longer automatically translated, reducing the size of the application by about 1.5MB. The example of how to enable auto-translation or translate a specific locale can be found [here](https://github.com/hm21/pro_image_editor/blob/stable/example/lib/features/emoji_translate_example.dart).
+
 
 ## 8.3.6
 - **FIX**(design-grounded): Fixed an issue where the scrollbar in the grounded bottombar did not restore correctly after opening a subeditor.

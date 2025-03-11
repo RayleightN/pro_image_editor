@@ -258,7 +258,7 @@ class _DefaultEmojiPickerViewState extends State<ProEmojiPickerView>
   }
 
   List<CategoryEmoji> get _categories {
-    return widget.state.categoryEmoji.toList();
+    return widget.config.emojiSet!(widget.config.locale);
   }
 
   @override

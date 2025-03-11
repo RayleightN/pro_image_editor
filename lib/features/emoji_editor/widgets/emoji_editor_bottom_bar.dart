@@ -8,7 +8,6 @@ class EmojiEditorBottomBar extends StatelessWidget {
   const EmojiEditorBottomBar(
     this.config,
     this.tabController,
-    this.categoryEmojis,
     this.closeSkinToneOverlay, {
     super.key,
   });
@@ -19,14 +18,13 @@ class EmojiEditorBottomBar extends StatelessWidget {
   /// The tab controller for navigating between emoji categories.
   final TabController tabController;
 
-  /// The list of emoji categories.
-  final List<CategoryEmoji> categoryEmojis;
-
   /// Callback function for closing the skin tone overlay.
   final VoidCallback closeSkinToneOverlay;
 
   @override
   Widget build(BuildContext context) {
+    final categoryEmojis = config.emojiSet!(config.locale);
+
     return SizedBox(
       height: config.categoryViewConfig.tabBarHeight,
       child: TabBar(

@@ -93,10 +93,15 @@ class EmojiEditorState extends State<EmojiEditor>
   }
 
   Config _getEditorConfig(BoxConstraints constraints) {
+    var emojiI18n = i18n.emojiEditor;
+
     return Config(
       height: double.infinity,
-      locale: emojiEditorConfigs.locale,
-      emojiSet: emojiEditorConfigs.emojiSet,
+      locale: emojiI18n.locale ?? Localizations.localeOf(context),
+      emojiSet: emojiEditorConfigs.emojiSet ??
+          (i18n.emojiEditor.enableSearchAutoI18n
+              ? getDefaultEmojiLocale
+              : (_) => emojiSetEnglish),
       checkPlatformCompatibility: emojiEditorConfigs.checkPlatformCompatibility,
       emojiTextStyle: _textStyle,
       emojiViewConfig: emojiEditorConfigs.style.emojiViewConfig ??
@@ -188,12 +193,13 @@ class EmojiEditorState extends State<EmojiEditor>
   Widget _buildEmojiPicker() {
     return LayoutBuilder(builder: (context, constraints) {
       if (_showExternalSearchPage) {
+        var configs = _getEditorConfig(constraints);
+
         return EmojiEditorFullScreenSearchView(
           key: _emojiSearchPageKey,
-          config: _getEditorConfig(constraints),
+          config: configs,
           state: EmojiViewState(
-            (emojiEditorConfigs.emojiSet ??
-                getDefaultEmojiLocale)(emojiEditorConfigs.locale),
+            configs.emojiSet!(configs.locale),
             (category, emoji) {
               Navigator.pop(
                 context,
