@@ -875,17 +875,18 @@ Made with [contrib.rocks](https://contrib.rocks).
 
 ### Included Packages
 
-This package uses several Flutter packages to provide a seamless editing experience. A big thanks to the authors of these amazing packages. Here’s a list of the packages we used in this project:
+A big thanks to the authors of these amazing packages.
 
 - [emoji_picker_flutter](https://pub.dev/packages/emoji_picker_flutter)
 
-From these packages, only a small part of the code is used, with some code changes that better fit to the image editor:
+Packages created by the Dart team:
+- [http](https://pub.dev/packages/http)
+- [web](https://pub.dev/packages/web)
+
+
+Packages that are used with a minor modified version, but are not a direct dependency:
 - [archive](https://pub.dev/packages/archive)
 - [defer_pointer](https://pub.dev/packages/defer_pointer)
 - [image](https://pub.dev/packages/image)
 - [mime](https://pub.dev/packages/mime)
 - [rounded_background_text](https://pub.dev/packages/rounded_background_text)
-
-Packages used by the editor, created by the Dart team:
-- [http](https://pub.dev/packages/http)
-- [web](https://pub.dev/packages/web)
