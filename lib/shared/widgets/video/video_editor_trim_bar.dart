@@ -23,10 +23,8 @@ class VideoEditorTrimBar extends StatefulWidget {
 }
 
 /// TODO: Trimbar zooming
-/// TODO: Trimbar move when tap between the bar
 /// TODO: Trimbar thumbnails
 /// TODO: Trimbar duration text
-/// TODO: Trimbar fix duration max issue
 class _VideoEditorTrimBarState extends State<VideoEditorTrimBar> {
   double trimStart = 0;
   double trimEnd = 1;
@@ -55,6 +53,7 @@ class _VideoEditorTrimBarState extends State<VideoEditorTrimBar> {
     setState(() {
       double minStart = value - minTrimPercentage; // Enforce minimum duration
       trimEnd = value;
+      print(value);
       trimStart =
           min(trimStart, minStart); // Prevent start from being too close
 
@@ -66,6 +65,10 @@ class _VideoEditorTrimBarState extends State<VideoEditorTrimBar> {
       widget.onTrimEndChanged(
           Duration(seconds: (trimEnd * widget.videoDuration).toInt()));
     });
+  }
+
+  void _updateHorizontalDrag(double value) {
+    print(value);
   }
 
   String _formatTime(double value) {
@@ -89,11 +92,120 @@ class _VideoEditorTrimBarState extends State<VideoEditorTrimBar> {
           child: LayoutBuilder(builder: (_, constraints) {
             double editorWidth = constraints.maxWidth;
             double trimWidth = (trimEnd - trimStart) * editorWidth;
+            double offsetLeftHandler = trimStart * editorWidth;
+            double offsetRightHandler = trimEnd * editorWidth -
+                max(_minInteractiveDimension, player.style.trimBarHandlerWidth);
+
             return Column(
               children: [
                 Padding(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  padding: const EdgeInsets.symmetric(vertical: 8.0),
+                  child: Stack(
+                    children: [
+                      // Video Thumbnails
+                      Container(
+                        height: player.style.trimBarHeight,
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        decoration: BoxDecoration(
+                          color: const Color.fromARGB(255, 51, 51, 51),
+                          borderRadius: BorderRadius.circular(
+                              player.style.trimBarHandlerRadius),
+                        ),
+                        child: ListView.builder(
+                          scrollDirection: Axis.horizontal,
+                          itemCount: widget.thumbnails.length,
+                          itemBuilder: (context, index) {
+                            return Container(
+                              width: 50,
+                              margin: const EdgeInsets.symmetric(horizontal: 2),
+                              decoration: BoxDecoration(
+                                image: DecorationImage(
+                                  image: widget.thumbnails[index],
+                                  fit: BoxFit.cover,
+                                ),
+                                borderRadius: BorderRadius.circular(
+                                    player.style.trimBarHandlerRadius),
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+
+                      // Trim selection overlay
+                      Positioned(
+                        left: trimStart * editorWidth,
+                        child: Container(
+                          width: trimWidth,
+                          height: player.style.trimBarHeight,
+                          decoration: BoxDecoration(
+                            border: Border.all(
+                                color: player.style.trimBarBackground,
+                                width: 3),
+                            borderRadius: BorderRadius.circular(
+                                player.style.trimBarHandlerRadius),
+                          ),
+                        ),
+                      ),
+
+                      /// Trim active area
+                      Positioned(
+                        left: offsetLeftHandler,
+                        width: offsetRightHandler - offsetLeftHandler,
+                        child: GestureDetector(
+                          behavior: HitTestBehavior.translucent,
+                          onHorizontalDragUpdate: (details) {
+                            double factor = details.primaryDelta! / editorWidth;
+                            double newValueStart = trimStart + factor;
+                            double newValueEnd = trimEnd + factor;
+                            if (newValueStart >= 0 && newValueEnd <= 1) {
+                              _updateTrimStart(newValueStart);
+                              _updateTrimEnd(newValueEnd);
+                            } else if (newValueEnd > 1) {
+                              double diff = 1 - trimEnd;
+
+                              _updateTrimStart(trimStart + diff);
+                              _updateTrimEnd(trimEnd + diff);
+                            } else if (newValueStart < 0) {
+                              _updateTrimStart(0);
+                              _updateTrimEnd(trimEnd - trimStart);
+                            }
+                          },
+                          child: _buildTrimHandle(player, true),
+                        ),
+                      ),
+
+                      /// Trim handles - Left
+                      Positioned(
+                        left: offsetLeftHandler,
+                        child: GestureDetector(
+                          behavior: HitTestBehavior.translucent,
+                          onHorizontalDragUpdate: (details) {
+                            double newValue =
+                                trimStart + details.primaryDelta! / editorWidth;
+                            _updateTrimStart(max(0, newValue));
+                          },
+                          child: _buildTrimHandle(player, true),
+                        ),
+                      ),
+
+                      /// Trim handles - Right
+                      Positioned(
+                        left: offsetRightHandler,
+                        child: GestureDetector(
+                          behavior: HitTestBehavior.translucent,
+                          onHorizontalDragUpdate: (details) {
+                            double newValue =
+                                trimEnd + details.primaryDelta! / editorWidth;
+                            _updateTrimEnd(min(1, newValue));
+                          },
+                          child: _buildTrimHandle(player, false),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 4),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -101,85 +213,6 @@ class _VideoEditorTrimBarState extends State<VideoEditorTrimBar> {
                       _buildTimeText(player, trimEnd),
                     ],
                   ),
-                ),
-                Stack(
-                  children: [
-                    // Video Thumbnails
-                    Container(
-                      height: player.style.trimBarHeight,
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                      decoration: BoxDecoration(
-                        color: const Color.fromARGB(255, 51, 51, 51),
-                        borderRadius: BorderRadius.circular(
-                            player.style.trimBarHandlerRadius),
-                      ),
-                      child: ListView.builder(
-                        scrollDirection: Axis.horizontal,
-                        itemCount: widget.thumbnails.length,
-                        itemBuilder: (context, index) {
-                          return Container(
-                            width: 50,
-                            margin: const EdgeInsets.symmetric(horizontal: 2),
-                            decoration: BoxDecoration(
-                              image: DecorationImage(
-                                image: widget.thumbnails[index],
-                                fit: BoxFit.cover,
-                              ),
-                              borderRadius: BorderRadius.circular(
-                                  player.style.trimBarHandlerRadius),
-                            ),
-                          );
-                        },
-                      ),
-                    ),
-
-                    // Trim selection overlay
-                    Positioned(
-                      left: trimStart * editorWidth,
-                      child: Container(
-                        width: trimWidth,
-                        height: player.style.trimBarHeight,
-                        decoration: BoxDecoration(
-                          border: Border.all(
-                              color: player.style.trimBarBackground, width: 3),
-                          borderRadius: BorderRadius.circular(
-                              player.style.trimBarHandlerRadius),
-                        ),
-                      ),
-                    ),
-
-                    // Trim handles - Left
-                    Positioned(
-                      left: trimStart * editorWidth,
-                      child: GestureDetector(
-                        behavior: HitTestBehavior.translucent,
-                        onHorizontalDragUpdate: (details) {
-                          double newValue =
-                              trimStart + details.primaryDelta! / editorWidth;
-                          if (newValue >= 0 && newValue < trimEnd)
-                            _updateTrimStart(newValue);
-                        },
-                        child: _buildTrimHandle(player, true),
-                      ),
-                    ),
-
-                    // Trim handles - Right
-                    Positioned(
-                      left: trimEnd * editorWidth -
-                          max(_minInteractiveDimension,
-                              player.style.trimBarHandlerWidth),
-                      child: GestureDetector(
-                        behavior: HitTestBehavior.translucent,
-                        onHorizontalDragUpdate: (details) {
-                          double newValue =
-                              trimEnd + details.primaryDelta! / editorWidth;
-                          if (newValue > trimStart && newValue <= 1)
-                            _updateTrimEnd(newValue);
-                        },
-                        child: _buildTrimHandle(player, false),
-                      ),
-                    ),
-                  ],
                 ),
               ],
             );

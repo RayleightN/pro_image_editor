@@ -18,7 +18,7 @@ class VideoEditorControlsWidget extends StatelessWidget {
         player.configs.controlsPosition == VideoEditorControlPosition.top;
 
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 14),
       child: Stack(
         children: [
           player.widgets.headerToolbar ??
