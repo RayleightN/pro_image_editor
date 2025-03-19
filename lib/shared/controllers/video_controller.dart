@@ -26,6 +26,7 @@ class ProVideoController {
   VideoEditorCallbacks get callbacks => _callbacksFunction();
   VideoEditorConfigs get configs => _configsFunction();
 
+  late final playTimeNotifier = ValueNotifier<Duration>(Duration.zero);
   late final isPlayingNotifier = ValueNotifier<bool>(configs.initialPlay);
   late final isMutedNotifier = ValueNotifier<bool>(configs.initialMuted);
   late final trimDurationSpanNotifier = ValueNotifier<TrimDurationSpan>(
@@ -86,5 +87,9 @@ class ProVideoController {
       end: duration,
     );
     callbacks.onTrimSpanUpdate?.call(trimDurationSpanNotifier.value);
+  }
+
+  void setPlayTime(Duration duration) {
+    playTimeNotifier.value = duration;
   }
 }

@@ -27,9 +27,9 @@ class _VideoMediaKitExampleState extends State<VideoMediaKitExample>
   late final _controller = VideoController(_player);
 
   final VideoEditorConfigs _configs = const VideoEditorConfigs(
-    initialMuted: false,
+    initialMuted: true,
     initialPlay: false,
-    minTrimDuration: Duration(seconds: 7),
+    minTrimDuration: Duration(seconds: 2),
   );
   ProVideoController? _proVideoController;
 
@@ -52,7 +52,7 @@ class _VideoMediaKitExampleState extends State<VideoMediaKitExample>
       await Media.memory(bytes),
       play: _configs.initialPlay,
     );
-    await _player.setPlaylistMode(PlaylistMode.loop);
+    await _player.setPlaylistMode(PlaylistMode.none);
     await _player.setVolume(_configs.initialMuted ? 0 : 100);
 
     Completer<void> durationCompleter = Completer();
@@ -87,11 +87,23 @@ class _VideoMediaKitExampleState extends State<VideoMediaKitExample>
       setState(() {});
     });
 
-    /// Listen when video end
+    /// Listen to play time
     _player.stream.position.listen((position) {
+      if (!mounted) return;
+      _proVideoController!.setPlayTime(position);
+
       if (_isSeeking ||
           _durationSpan == null ||
           position < _durationSpan!.end) {
+        return;
+      }
+
+      _seekToPosition(_durationSpan!);
+    });
+
+    /// Listen video end
+    _player.stream.completed.listen((isEnded) {
+      if (!mounted || !isEnded || _isSeeking || _durationSpan == null) {
         return;
       }
 
@@ -117,6 +129,11 @@ class _VideoMediaKitExampleState extends State<VideoMediaKitExample>
       return;
     }
     _isSeeking = true;
+
+    _proVideoController!.pause();
+    _proVideoController!.setPlayTime(_durationSpan!.start);
+
+    await _player.pause();
     await _player.seek(span.start);
 
     _isSeeking = false;

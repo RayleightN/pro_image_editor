@@ -2,6 +2,7 @@ import 'dart:math';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:pro_image_editor/core/models/video/trim_duration_span_model.dart';
+import 'package:pro_image_editor/shared/widgets/video/trimmer/video_editor_play_time_indicator.dart';
 import '../video_editor_configurable.dart';
 import 'video_editor_trim_handle.dart';
 import 'video_editor_trim_thumbnail_bar.dart';
@@ -16,8 +17,8 @@ class VideoEditorTrimBar extends StatefulWidget {
 }
 
 class _VideoEditorTrimBarState extends State<VideoEditorTrimBar> {
-  double trimStart = 0;
-  double trimEnd = 1;
+  double _trimStart = 0;
+  double _trimEnd = 1;
   double _scale = 1.0;
   double _baseScale = 1.0;
   static const double _minScale = 1.0;
@@ -27,40 +28,43 @@ class _VideoEditorTrimBarState extends State<VideoEditorTrimBar> {
   VideoEditorConfigurable get _player => VideoEditorConfigurable.of(context);
 
   int get _videoDuration => _player.controller.videoDuration.inMicroseconds;
-  double get minTrimPercentage =>
+  double get _minTrimPercentage =>
       _player.configs.minTrimDuration.inMicroseconds / _videoDuration;
+
+  bool _isUpdatingTrimBar = false;
 
   void _updateTrimSpan() {
     _player.controller.setTrimSpan(
       TrimDurationSpan(
-        start: Duration(microseconds: (trimStart * _videoDuration).toInt()),
-        end: Duration(microseconds: (trimEnd * _videoDuration).toInt()),
+        start: Duration(microseconds: (_trimStart * _videoDuration).toInt()),
+        end: Duration(microseconds: (_trimEnd * _videoDuration).toInt()),
       ),
     );
+    _isUpdatingTrimBar = true;
     setState(() {});
   }
 
   void _updateTrimStart(double value) {
-    double minEnd = value + minTrimPercentage;
-    trimStart = value;
-    trimEnd = max(trimEnd, minEnd);
+    double minEnd = value + _minTrimPercentage;
+    _trimStart = value;
+    _trimEnd = max(_trimEnd, minEnd);
 
-    if (trimEnd > 1) {
-      trimStart = 1 - minTrimPercentage;
-      trimEnd = 1;
+    if (_trimEnd > 1) {
+      _trimStart = 1 - _minTrimPercentage;
+      _trimEnd = 1;
     }
 
     _updateTrimSpan();
   }
 
   void _updateTrimEnd(double value) {
-    double minStart = value - minTrimPercentage;
-    trimEnd = value;
-    trimStart = min(trimStart, minStart);
+    double minStart = value - _minTrimPercentage;
+    _trimEnd = value;
+    _trimStart = min(_trimStart, minStart);
 
-    if (trimStart < 0) {
-      trimStart = 0;
-      trimEnd = minTrimPercentage;
+    if (_trimStart < 0) {
+      _trimStart = 0;
+      _trimEnd = _minTrimPercentage;
     }
 
     _updateTrimSpan();
@@ -80,19 +84,19 @@ class _VideoEditorTrimBarState extends State<VideoEditorTrimBar> {
 
   void _updateDragTrimBar(DragUpdateDetails details, double scaledWidth) {
     double factor = details.primaryDelta! / scaledWidth;
-    double newValueStart = trimStart + factor;
-    double newValueEnd = trimEnd + factor;
+    double newValueStart = _trimStart + factor;
+    double newValueEnd = _trimEnd + factor;
 
     if (newValueStart >= 0 && newValueEnd <= 1) {
       _updateTrimStart(newValueStart);
       _updateTrimEnd(newValueEnd);
-    } else if (newValueEnd > 1 && trimEnd != 1) {
-      double diff = 1 - trimEnd;
-      _updateTrimStart(trimStart + diff);
-      _updateTrimEnd(trimEnd + diff);
-    } else if (newValueStart < 0 && trimStart != 0) {
+    } else if (newValueEnd > 1 && _trimEnd != 1) {
+      double diff = 1 - _trimEnd;
+      _updateTrimStart(_trimStart + diff);
+      _updateTrimEnd(_trimEnd + diff);
+    } else if (newValueStart < 0 && _trimStart != 0) {
       _updateTrimStart(0);
-      _updateTrimEnd(trimEnd - trimStart);
+      _updateTrimEnd(_trimEnd - _trimStart);
     } else {
       _updateScrollbar(details.delta.dx);
     }
@@ -101,10 +105,12 @@ class _VideoEditorTrimBarState extends State<VideoEditorTrimBar> {
   void _triggerTrimSpanEnd() {
     _player.callbacks.onTrimSpanEnd?.call(
       TrimDurationSpan(
-        start: Duration(microseconds: (trimStart * _videoDuration).toInt()),
-        end: Duration(microseconds: (trimEnd * _videoDuration).toInt()),
+        start: Duration(microseconds: (_trimStart * _videoDuration).toInt()),
+        end: Duration(microseconds: (_trimEnd * _videoDuration).toInt()),
       ),
     );
+    _isUpdatingTrimBar = false;
+    setState(() {});
   }
 
   double get _minInteractiveDimension =>
@@ -118,12 +124,12 @@ class _VideoEditorTrimBarState extends State<VideoEditorTrimBar> {
 
     return RepaintBoundary(
       child: LayoutBuilder(builder: (_, constraints) {
-        double editorWidth =
+        double trimBarWidth =
             constraints.maxWidth - _player.contentPadding.horizontal;
-        double scaledWidth = editorWidth * _scale;
-        double trimWidth = (trimEnd - trimStart) * scaledWidth;
-        double offsetLeftHandler = trimStart * scaledWidth;
-        double offsetRightHandler = trimEnd * scaledWidth -
+        double scaledWidth = trimBarWidth * _scale;
+        double trimWidth = (_trimEnd - _trimStart) * scaledWidth;
+        double offsetLeftHandler = _trimStart * scaledWidth;
+        double offsetRightHandler = _trimEnd * scaledWidth -
             max(_minInteractiveDimension, _player.style.trimBarHandlerWidth);
 
         return Listener(
@@ -171,6 +177,10 @@ class _VideoEditorTrimBarState extends State<VideoEditorTrimBar> {
                       scaledWidth,
                     ),
 
+                    /// Play-time indicator
+                    if (!_isUpdatingTrimBar)
+                      VideoEditorPlayTimeIndicator(trimBarWidth: scaledWidth),
+
                     /// Trim body area
                     _buildTrimBodyArea(
                       offsetLeftHandler,
@@ -180,10 +190,10 @@ class _VideoEditorTrimBarState extends State<VideoEditorTrimBar> {
                     ),
 
                     /// Trim handler left
-                    _buildLeftResizeHandler(offsetLeftHandler, scaledWidth),
+                    _buildResizeHandler(true, offsetLeftHandler, scaledWidth),
 
                     /// Trim handler right
-                    _buildRightResizeHandler(offsetRightHandler, scaledWidth),
+                    _buildResizeHandler(false, offsetRightHandler, scaledWidth),
                   ],
                 ),
               ),
@@ -270,36 +280,23 @@ class _VideoEditorTrimBarState extends State<VideoEditorTrimBar> {
     );
   }
 
-  Widget _buildLeftResizeHandler(double offset, double scaledWidth) {
+  Widget _buildResizeHandler(bool isLeft, double offset, double scaledWidth) {
     return Positioned(
       left: offset,
       child: GestureDetector(
         behavior: HitTestBehavior.translucent,
         onHorizontalDragEnd: (_) => _triggerTrimSpanEnd(),
         onHorizontalDragUpdate: (details) {
-          double newValue = trimStart + details.primaryDelta! / scaledWidth;
-          _updateTrimStart(max(0, newValue));
+          if (isLeft) {
+            double newValue = _trimStart + details.primaryDelta! / scaledWidth;
+            _updateTrimStart(max(0, newValue));
+          } else {
+            double newValue = _trimEnd + details.primaryDelta! / scaledWidth;
+            _updateTrimEnd(min(1, newValue));
+          }
         },
         child: VideoEditorTrimHandle(
-          isLeft: true,
-          minInteractiveDimension: _minInteractiveDimension,
-        ),
-      ),
-    );
-  }
-
-  Widget _buildRightResizeHandler(double offset, double scaledWidth) {
-    return Positioned(
-      left: offset,
-      child: GestureDetector(
-        behavior: HitTestBehavior.translucent,
-        onHorizontalDragEnd: (_) => _triggerTrimSpanEnd(),
-        onHorizontalDragUpdate: (details) {
-          double newValue = trimEnd + details.primaryDelta! / scaledWidth;
-          _updateTrimEnd(min(1, newValue));
-        },
-        child: VideoEditorTrimHandle(
-          isLeft: false,
+          isLeft: isLeft,
           minInteractiveDimension: _minInteractiveDimension,
         ),
       ),

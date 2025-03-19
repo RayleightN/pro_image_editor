@@ -17,6 +17,8 @@ class VideoEditorStyle {
     this.trimBarColor = const Color(0xFFFFFFFF),
     this.trimBarBackground = const Color(0xFF0f7dff),
     this.trimBarOutsideAreaBackground = const Color.fromARGB(120, 0, 0, 0),
+    this.trimBarPlayTimeIndicatorColor = const Color(0xFFFFFFFF),
+    this.trimBarPlayTimeIndicatorWidth = 1,
     this.trimBarHandlerIconSize = 24,
     this.trimBarHeight = 50,
     this.trimBarHandlerWidth = 20,
@@ -46,6 +48,9 @@ class VideoEditorStyle {
   final Color trimBarOutsideAreaBackground;
   final double trimBarHeight;
   final double trimBarBorderWidth;
+
+  final Color trimBarPlayTimeIndicatorColor;
+  final double trimBarPlayTimeIndicatorWidth;
 
   final double trimBarHandlerWidth;
   final double trimBarHandlerIconSize;
