@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:typed_data';
 
 import 'package:example/core/constants/example_constants.dart';
 import 'package:example/core/mixin/example_helper.dart';
@@ -23,12 +22,10 @@ class _VideoMediaKitExampleState extends State<VideoMediaKitExample>
   late final _player = Player();
   late final _controller = VideoController(_player);
 
-  final _fileSize = '1.5MB';
-
-  late VideoEditorConfigs _configs = VideoEditorConfigs(
-    infoBannerText: '00:00 | $_fileSize',
+  final VideoEditorConfigs _configs = const VideoEditorConfigs(
     initialMuted: false,
     initialPlay: false,
+    minTrimDuration: Duration(seconds: 7),
   );
   ProVideoController? _proVideoController;
 
@@ -45,19 +42,24 @@ class _VideoMediaKitExampleState extends State<VideoMediaKitExample>
   }
 
   void _initializePlayer() async {
-    await _player.open(Media(kVideoEditorExampleAssetPath), play: false);
+    var bytes = await loadAssetImageAsUint8List(kVideoEditorExampleAssetPath);
+
+    await _player.open(
+      await Media.memory(bytes),
+      play: _configs.initialPlay,
+    );
     await _player.setPlaylistMode(PlaylistMode.loop);
+    await _player.setVolume(_configs.initialMuted ? 0 : 100);
 
     Completer<void> durationCompleter = Completer();
     Completer<void> resolutionCompleter = Completer();
     Size initialSize = Size.zero;
+    Duration videoDuration = Duration.zero;
 
     _player.stream.duration.listen((event) {
       if (!mounted) return;
 
-      _configs = _configs.copyWith(
-        infoBannerText: '${_formatDuration(event)} | $_fileSize',
-      );
+      videoDuration = event;
 
       if (!durationCompleter.isCompleted) {
         durationCompleter.complete();
@@ -83,48 +85,10 @@ class _VideoMediaKitExampleState extends State<VideoMediaKitExample>
 
     _proVideoController = ProVideoController(
       videoPlayer: _buildVideoPlayer(),
-      initialSize: initialSize,
+      initialResolution: initialSize,
+      videoDuration: videoDuration,
+      fileSize: bytes.lengthInBytes,
     );
-
-    /*    ..stream.duration.listen((event) {
-        print(event);
-        if (!mounted) return;
-
-        _configs = _configs.copyWith(
-          infoBannerText: '${_formatDuration(event)} | $_fileSize',
-        );
-
-        setState(() {});
-      })
-      ..stream.width.listen((event) {
-        print(Size(
-          _player.state.width?.toDouble() ?? 0,
-          _player.state.height?.toDouble() ?? 0,
-        ));
-      }); */
-/*
-    TODO: duration
-    _player.state.duration;
-    TODO: resolution
-    Size(
-      _player.state.width?.toDouble() ?? 0,
-      _player.state.height?.toDouble() ?? 0,
-    );
-    */
-  }
-
-  String _formatDuration(Duration duration) {
-    String twoDigits(int n) => n.toString().padLeft(2, '0');
-
-    String minutes = twoDigits(duration.inMinutes.remainder(60));
-    String seconds = twoDigits(duration.inSeconds.remainder(60));
-
-    if (duration.inHours > 0) {
-      String hours = twoDigits(duration.inHours);
-      return '$hours:$minutes:$seconds';
-    } else {
-      return '$minutes:$seconds';
-    }
   }
 
   @override

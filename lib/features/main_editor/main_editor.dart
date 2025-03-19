@@ -818,7 +818,7 @@ class ProImageEditorState extends State<ProImageEditor>
     ImageInfos? imageInfos,
   ]) async {
     if (_isVideoEditor) {
-      var initSize = widget.videoController!.initialSize;
+      var initSize = widget.videoController!.initialResolution;
       _imageInfos = ImageInfos(
         rawSize: initSize,
         renderedSize: initSize,

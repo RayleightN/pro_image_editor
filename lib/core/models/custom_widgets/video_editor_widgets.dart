@@ -1,4 +1,5 @@
 import 'package:flutter/widgets.dart';
+import 'package:pro_image_editor/core/models/video/trim_duration_span_model.dart';
 
 class VideoEditorWidgets {
   const VideoEditorWidgets({
@@ -8,12 +9,14 @@ class VideoEditorWidgets {
     this.trimBar,
     this.infoBanner,
     this.headerToolbar,
+    this.trimDurationInfo,
   });
 
   final Widget? playIndicator;
   final Widget? pauseIndicator;
   final Widget Function(Function(bool isMuted) setMute)? muteButton;
-  final Widget? infoBanner;
+  final Widget Function(TrimDurationSpan durationSpan)? trimDurationInfo;
+  final Widget Function(TrimDurationSpan durationSpan)? infoBanner;
   final Widget? trimBar;
 
   final Widget? headerToolbar;

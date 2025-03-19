@@ -16,8 +16,7 @@ class VideoEditorConfigs {
     this.initialPlay = false,
     this.initialMuted = false,
     this.controlsPosition = VideoEditorControlPosition.top,
-    this.infoBannerText,
-    this.minTrimDuration = const Duration(seconds: 10),
+    this.minTrimDuration = const Duration(seconds: 7),
     this.animatedIndicatorDuration = const Duration(milliseconds: 200),
     this.animatedIndicatorSwitchInCurve = Curves.ease,
     this.animatedIndicatorSwitchOutCurve = Curves.ease,
@@ -34,8 +33,6 @@ class VideoEditorConfigs {
 
   final VideoEditorControlPosition controlsPosition;
 
-  final String? infoBannerText;
-
   final Duration animatedIndicatorDuration;
   final Curve animatedIndicatorSwitchInCurve;
   final Curve animatedIndicatorSwitchOutCurve;
@@ -49,7 +46,6 @@ class VideoEditorConfigs {
     VideoEditorControlPosition? controlsPosition,
     bool? initialPlay,
     bool? initialMuted,
-    String? infoBannerText,
     Duration? animatedIndicatorDuration,
     Curve? animatedIndicatorSwitchInCurve,
     Curve? animatedIndicatorSwitchOutCurve,
@@ -62,7 +58,6 @@ class VideoEditorConfigs {
       controlsPosition: controlsPosition ?? this.controlsPosition,
       initialPlay: initialPlay ?? this.initialPlay,
       initialMuted: initialMuted ?? this.initialMuted,
-      infoBannerText: infoBannerText ?? this.infoBannerText,
       animatedIndicatorDuration:
           animatedIndicatorDuration ?? this.animatedIndicatorDuration,
       animatedIndicatorSwitchInCurve:
@@ -82,7 +77,6 @@ class VideoEditorConfigs {
         other.widgets == widgets &&
         other.initialPlay == initialPlay &&
         other.initialMuted == initialMuted &&
-        other.infoBannerText == infoBannerText &&
         other.animatedIndicatorDuration == animatedIndicatorDuration &&
         other.animatedIndicatorSwitchInCurve ==
             animatedIndicatorSwitchInCurve &&
@@ -97,7 +91,6 @@ class VideoEditorConfigs {
         widgets.hashCode ^
         initialPlay.hashCode ^
         initialMuted.hashCode ^
-        infoBannerText.hashCode ^
         animatedIndicatorDuration.hashCode ^
         animatedIndicatorSwitchInCurve.hashCode ^
         animatedIndicatorSwitchOutCurve.hashCode;

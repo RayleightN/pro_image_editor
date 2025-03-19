@@ -8,16 +8,18 @@ class VideoEditorConfigurable extends InheritedWidget {
   const VideoEditorConfigurable({
     super.key,
     required super.child,
-    required this.videoManager,
+    required this.controller,
   });
 
-  final ProVideoController videoManager;
+  final ProVideoController controller;
 
-  VideoEditorConfigs get configs => videoManager.configs;
-  VideoEditorCallbacks get callbacks => videoManager.callbacks;
+  final contentPadding = const EdgeInsets.symmetric(horizontal: 14);
 
-  ValueNotifier<bool> get isPlayingNotifier => videoManager.isPlayingNotifier;
-  ValueNotifier<bool> get isMutedNotifier => videoManager.isMutedNotifier;
+  VideoEditorConfigs get configs => controller.configs;
+  VideoEditorCallbacks get callbacks => controller.callbacks;
+
+  ValueNotifier<bool> get isPlayingNotifier => controller.isPlayingNotifier;
+  ValueNotifier<bool> get isMutedNotifier => controller.isMutedNotifier;
 
   VideoEditorIcons get icons => configs.icons;
   VideoEditorStyle get style => configs.style;

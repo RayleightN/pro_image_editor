@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:pro_image_editor/shared/widgets/video/toolbar/video_editor_trim_info_widget.dart';
 
 import '/core/models/editor_configs/video_editor_configs.dart';
-import '/shared/widgets/video/video_editor_mute_button.dart';
+import 'toolbar/video_editor_mute_button.dart';
 import '/shared/widgets/video/video_editor_state_widget.dart';
 import 'video_editor_configurable.dart';
-import 'video_editor_info_banner.dart';
-import 'video_editor_trim_bar.dart';
+import 'toolbar/video_editor_info_banner.dart';
+import 'trimmer/video_editor_trim_bar.dart';
 
 class VideoEditorControlsWidget extends StatelessWidget {
   const VideoEditorControlsWidget();
@@ -17,38 +18,31 @@ class VideoEditorControlsWidget extends StatelessWidget {
     bool alignTop =
         player.configs.controlsPosition == VideoEditorControlPosition.top;
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 14),
-      child: Stack(
-        children: [
-          player.widgets.headerToolbar ??
-              Column(
-                spacing: 10,
-                verticalDirection:
-                    alignTop ? VerticalDirection.down : VerticalDirection.up,
-                children: [
-                  VideoEditorTrimBar(
-                    videoDuration: 120, // Video duration in seconds
-                    thumbnails: [],
-                    onTrimStartChanged: (duration) {
-                      print('Trim Start: ${duration.inSeconds}s');
-                    },
-                    onTrimEndChanged: (duration) {
-                      print('Trim End: ${duration.inSeconds}s');
-                    },
-                  ),
-                  const Row(
+    return Stack(
+      children: [
+        player.widgets.headerToolbar ??
+            Column(
+              spacing: 10,
+              verticalDirection:
+                  alignTop ? VerticalDirection.down : VerticalDirection.up,
+              children: [
+                const VideoEditorTrimBar(),
+                Padding(
+                  padding: player.contentPadding,
+                  child: const Row(
                     spacing: 12,
                     children: [
                       VideoEditorMuteButton(),
                       VideoEditorInfoBanner(),
+                      Spacer(),
+                      VideoEditorTrimInfoWidget()
                     ],
                   ),
-                ],
-              ),
-          const VideoEditorStateWidget(),
-        ],
-      ),
+                ),
+              ],
+            ),
+        const VideoEditorStateWidget(),
+      ],
     );
   }
 }

@@ -5,18 +5,23 @@ class VideoEditorStyle {
     this.playIndicatorColor = const Color(0xFFFFFFFF),
     this.playIndicatorBackground = const Color.fromARGB(128, 0, 0, 0),
     this.muteButtonColor = const Color(0xFFFFFFFF),
-    this.muteButtonBackground = const Color.fromARGB(60, 0, 0, 0),
+    this.muteButtonBackground = const Color.fromARGB(120, 0, 0, 0),
     this.infoBannerTextStyle,
     this.infoBannerTextColor = const Color(0xFFFFFFFF),
-    this.infoBannerBackground = const Color.fromARGB(60, 0, 0, 0),
+    this.infoBannerBackground = const Color.fromARGB(120, 0, 0, 0),
+    this.trimDurationTextStyle,
+    this.trimDurationTextColor = const Color(0xFFFFFFFF),
+    this.trimDurationBackground = const Color.fromARGB(120, 0, 0, 0),
     this.trimBarTextColor = const Color(0xFFFFFFFF),
-    this.trimBarTextBackground = const Color.fromARGB(60, 0, 0, 0),
+    this.trimBarTextBackground = const Color.fromARGB(120, 0, 0, 0),
     this.trimBarColor = const Color(0xFFFFFFFF),
     this.trimBarBackground = const Color(0xFF0f7dff),
+    this.trimBarOutsideAreaBackground = const Color.fromARGB(120, 0, 0, 0),
     this.trimBarHandlerIconSize = 24,
     this.trimBarHeight = 50,
     this.trimBarHandlerWidth = 20,
     this.trimBarHandlerRadius = 5,
+    this.trimBarBorderWidth = 3,
   });
 
   final Color playIndicatorColor;
@@ -29,12 +34,18 @@ class VideoEditorStyle {
   final Color infoBannerTextColor;
   final Color infoBannerBackground;
 
+  final TextStyle? trimDurationTextStyle;
+  final Color trimDurationTextColor;
+  final Color trimDurationBackground;
+
   final Color trimBarTextColor;
   final Color trimBarTextBackground;
 
   final Color trimBarColor;
   final Color trimBarBackground;
+  final Color trimBarOutsideAreaBackground;
   final double trimBarHeight;
+  final double trimBarBorderWidth;
 
   final double trimBarHandlerWidth;
   final double trimBarHandlerIconSize;

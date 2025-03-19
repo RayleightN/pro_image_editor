@@ -2,15 +2,23 @@ import 'package:flutter/widgets.dart';
 
 import '/core/models/editor_callbacks/video_editor_callbacks.dart';
 import '/core/models/editor_configs/video_editor_configs.dart';
+import '/core/models/video/trim_duration_span_model.dart';
 
 class ProVideoController {
   ProVideoController({
     required this.videoPlayer,
-    required this.initialSize,
+    required this.videoDuration,
+    required this.initialResolution,
+    required this.fileSize,
   });
 
   final Widget videoPlayer;
-  final Size initialSize;
+  final Duration videoDuration;
+  final Size initialResolution;
+  final int fileSize;
+
+  /// TODO: generate thumbnails for trimmerbar and filter background
+  List<ImageProvider> thumbnails = [];
 
   late VideoEditorCallbacks Function() _callbacksFunction;
   late VideoEditorConfigs Function() _configsFunction;
@@ -20,6 +28,9 @@ class ProVideoController {
 
   late final isPlayingNotifier = ValueNotifier<bool>(configs.initialPlay);
   late final isMutedNotifier = ValueNotifier<bool>(configs.initialMuted);
+  late final trimDurationSpanNotifier = ValueNotifier<TrimDurationSpan>(
+    TrimDurationSpan(start: Duration.zero, end: videoDuration),
+  );
 
   initialize({
     required VideoEditorCallbacks Function() callbacksFunction,
@@ -43,5 +54,21 @@ class ProVideoController {
     isMutedNotifier.value = isMuted;
 
     callbacks.onMuteToggle?.call(isMuted);
+  }
+
+  void setTrimStart(Duration duration) {
+    trimDurationSpanNotifier.value = TrimDurationSpan(
+      start: duration,
+      end: trimDurationSpanNotifier.value.end,
+    );
+    callbacks.onTrimSpanChanged?.call(trimDurationSpanNotifier.value);
+  }
+
+  void setTrimEnd(Duration duration) {
+    trimDurationSpanNotifier.value = TrimDurationSpan(
+      start: trimDurationSpanNotifier.value.start,
+      end: duration,
+    );
+    callbacks.onTrimSpanChanged?.call(trimDurationSpanNotifier.value);
   }
 }

@@ -141,7 +141,7 @@ class MainEditorInteractiveContent extends StatelessWidget {
           /// Build video controls
           if (isVideoEditor)
             VideoEditorConfigurable(
-              videoManager: videoController!,
+              controller: videoController!,
               child: const VideoEditorControlsWidget(),
             ),
 
