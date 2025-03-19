@@ -4,8 +4,8 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:pro_image_editor/core/constants/image_constants.dart';
 
+import '/core/constants/image_constants.dart';
 import '/core/mixins/converted_callbacks.dart';
 import '/core/mixins/converted_configs.dart';
 import '/core/mixins/standalone_editor.dart';
@@ -13,6 +13,7 @@ import '/core/models/transform_helper.dart';
 import '/core/platform/io/io_helper.dart';
 import '/features/filter_editor/widgets/filter_editor_appbar.dart';
 import '/pro_image_editor.dart';
+import '/shared/controllers/video_controller.dart';
 import '/shared/services/content_recorder/widgets/content_recorder.dart';
 import '/shared/utils/file_constructor_utils.dart';
 import '/shared/widgets/layer/layer_stack.dart';
@@ -46,9 +47,9 @@ class FilterEditor extends StatefulWidget
     super.key,
     required this.initConfigs,
     this.editorImage,
-    this.videoPlayer,
-  }) : assert(editorImage != null || videoPlayer != null,
-            'Either editorImage or videoPlayer must be provided.');
+    this.videoController,
+  }) : assert(editorImage != null || videoController != null,
+            'Either editorImage or videoController must be provided.');
 
   /// Constructs a `FilterEditor` widget with image data loaded from memory.
   factory FilterEditor.memory(
@@ -114,12 +115,12 @@ class FilterEditor extends StatefulWidget
     String? assetPath,
     String? networkUrl,
     EditorImage? editorImage,
-    Widget? videoPlayer,
+    ProVideoController? videoController,
     required FilterEditorInitConfigs initConfigs,
   }) {
     return FilterEditor._(
       key: key,
-      editorImage: videoPlayer != null
+      editorImage: videoController != null
           ? null
           : editorImage ??
               EditorImage(
@@ -128,20 +129,20 @@ class FilterEditor extends StatefulWidget
                 networkUrl: networkUrl,
                 assetPath: assetPath,
               ),
-      videoPlayer: videoPlayer,
+      videoController: videoController,
       initConfigs: initConfigs,
     );
   }
 
   /// Constructs a `BlurEditor` widget with an video player.
   factory FilterEditor.video(
-    Widget videoPlayer, {
+    ProVideoController videoController, {
     Key? key,
     required FilterEditorInitConfigs initConfigs,
   }) {
     return FilterEditor._(
       key: key,
-      videoPlayer: videoPlayer,
+      videoController: videoController,
       initConfigs: initConfigs,
     );
   }
@@ -151,7 +152,7 @@ class FilterEditor extends StatefulWidget
   @override
   final EditorImage? editorImage;
   @override
-  final Widget? videoPlayer;
+  final ProVideoController? videoController;
 
   @override
   createState() => FilterEditorState();
@@ -316,7 +317,7 @@ class FilterEditorState extends State<FilterEditor>
                                     .height,
                             configs: configs,
                             image: editorImage,
-                            videoPlayer: videoPlayer,
+                            videoPlayer: videoController?.videoPlayer,
                             filters: _getActiveFilters(),
                             tuneAdjustments: appliedTuneAdjustments,
                             blurFactor: appliedBlurFactor,

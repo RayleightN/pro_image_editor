@@ -12,7 +12,6 @@ import '/core/mixins/editor_configs_mixin.dart';
 import '/core/models/history/last_layer_interaction_position.dart';
 import '/core/models/styles/draggable_sheet_style.dart';
 import '/core/platform/io/io_helper.dart';
-import '/features/main_editor/services/video_manager.dart';
 import '/features/main_editor/widgets/main_editor_appbar.dart';
 import '/features/main_editor/widgets/main_editor_background_image.dart';
 import '/features/main_editor/widgets/main_editor_background_video.dart';
@@ -96,10 +95,10 @@ class ProImageEditor extends StatefulWidget
     super.key,
     required this.callbacks,
     this.editorImage,
-    this.videoPlayer,
+    this.videoController,
     this.configs = const ProImageEditorConfigs(),
-  }) : assert(editorImage != null || videoPlayer != null,
-            'Either editorImage or videoPlayer must be provided.');
+  }) : assert(editorImage != null || videoController != null,
+            'Either editorImage or videoController must be provided.');
 
   /// This constructor creates a `ProImageEditor` widget configured to edit an
   /// image loaded from the specified `byteArray`.
@@ -296,7 +295,7 @@ class ProImageEditor extends StatefulWidget
     String? assetPath,
     String? networkUrl,
     EditorImage? editorImage,
-    Widget? videoPlayer,
+    ProVideoController? videoController,
     ProImageEditorConfigs configs = const ProImageEditorConfigs(),
     required ProImageEditorCallbacks callbacks,
   }) {
@@ -309,7 +308,7 @@ class ProImageEditor extends StatefulWidget
             networkUrl: networkUrl,
             assetPath: assetPath,
           ),
-      videoPlayer: videoPlayer,
+      videoController: videoController,
       configs: configs,
       callbacks: callbacks,
     );
@@ -324,14 +323,14 @@ class ProImageEditor extends StatefulWidget
   ///
   /// [Example with media_kit](https://github.com/hm21/pro_image_editor/blob/stable/example/lib/features/video_examples/video_media_kit_example.dart)
   factory ProImageEditor.video(
-    Widget videoPlayer, {
+    ProVideoController videoController, {
     Key? key,
     ProImageEditorConfigs configs = const ProImageEditorConfigs(),
     required ProImageEditorCallbacks callbacks,
   }) {
     return ProImageEditor._(
       key: key,
-      videoPlayer: videoPlayer,
+      videoController: videoController,
       configs: configs,
       callbacks: callbacks,
     );
@@ -345,8 +344,8 @@ class ProImageEditor extends StatefulWidget
   /// The image being edited in the editor.
   final EditorImage? editorImage;
 
-  /// A widget that represents the video player.
-  final Widget? videoPlayer;
+  /// The controller for the video editor.
+  final ProVideoController? videoController;
 
   @override
   State<ProImageEditor> createState() => ProImageEditorState();
@@ -459,15 +458,10 @@ class ProImageEditorState extends State<ProImageEditor>
   bool get canRedo => stateManager.canRedo;
 
   /// Indicates whether video editor is enabled.
-  late final bool _isVideoEditor = widget.videoPlayer != null;
+  late final bool _isVideoEditor = widget.videoController != null;
 
   /// Get the current background image.
   late EditorImage? editorImage = widget.editorImage;
-
-  late final VideoManager _videoManager = VideoManager(
-    configsFunction: () => configs.videoEditor,
-    callbacksFunction: () => callbacks.videoEditorCallbacks,
-  );
 
   /// A [Completer] used to track the completion of a page open operation.
   ///
@@ -484,6 +478,12 @@ class ProImageEditorState extends State<ProImageEditor>
   @override
   void initState() {
     super.initState();
+
+    widget.videoController?.initialize(
+      configsFunction: () => configs.videoEditor,
+      callbacksFunction: () =>
+          callbacks.videoEditorCallbacks ?? VideoEditorCallbacks(),
+    );
 
     _rebuildController = StreamController.broadcast();
     _controllers = MainEditorControllers(configs, callbacks);
@@ -817,14 +817,14 @@ class ProImageEditorState extends State<ProImageEditor>
     TransformConfigs? transformConfigs,
     ImageInfos? imageInfos,
   ]) async {
-    /// TODO: function for video decoding
     if (_isVideoEditor) {
-      _imageInfos = const ImageInfos(
-        rawSize: Size(500, 500),
-        renderedSize: Size(500, 500),
-        originalRenderedSize: Size(500, 500),
-        cropRectSize: Size(500, 500),
-        pixelRatio: 4,
+      var initSize = widget.videoController!.initialSize;
+      _imageInfos = ImageInfos(
+        rawSize: initSize,
+        renderedSize: initSize,
+        originalRenderedSize: initSize,
+        cropRectSize: initSize,
+        pixelRatio: initSize.width / sizesManager.editorSize.width,
         isRotated: false,
       );
       sizesManager.originalImageSize ??= _imageInfos!.rawSize;
@@ -1314,7 +1314,7 @@ class ProImageEditorState extends State<ProImageEditor>
       PaintEditor.autoSource(
         key: paintEditor,
         editorImage: editorImage,
-        videoPlayer: widget.videoPlayer,
+        videoController: widget.videoController,
         initConfigs: PaintEditorInitConfigs(
           configs: configs,
           callbacks: callbacks,
@@ -1385,7 +1385,7 @@ class ProImageEditorState extends State<ProImageEditor>
       CropRotateEditor.autoSource(
         key: cropRotateEditor,
         editorImage: editorImage,
-        videoPlayer: widget.videoPlayer,
+        videoController: widget.videoController,
         initConfigs: CropRotateEditorInitConfigs(
           configs: configs,
           callbacks: callbacks,
@@ -1453,7 +1453,7 @@ class ProImageEditorState extends State<ProImageEditor>
         child: TuneEditor.autoSource(
           key: tuneEditor,
           editorImage: editorImage,
-          videoPlayer: widget.videoPlayer,
+          videoController: widget.videoController,
           initConfigs: TuneEditorInitConfigs(
             theme: _theme,
             configs: configs,
@@ -1498,7 +1498,7 @@ class ProImageEditorState extends State<ProImageEditor>
       FilterEditor.autoSource(
         key: filterEditor,
         editorImage: editorImage,
-        videoPlayer: widget.videoPlayer,
+        videoController: widget.videoController,
         initConfigs: FilterEditorInitConfigs(
           theme: _theme,
           configs: configs,
@@ -1533,7 +1533,7 @@ class ProImageEditorState extends State<ProImageEditor>
       BlurEditor.autoSource(
         key: blurEditor,
         editorImage: editorImage,
-        videoPlayer: widget.videoPlayer,
+        videoController: widget.videoController,
         initConfigs: BlurEditorInitConfigs(
           theme: _theme,
           mainImageSize: sizesManager.decodedImageSize,
@@ -2144,7 +2144,7 @@ class ProImageEditorState extends State<ProImageEditor>
               _checkInteractiveViewer();
               setState(() {});
             }
-            _videoManager.onPlayerTap();
+            widget.videoController?.togglePlayState();
             mainEditorCallbacks?.onTap?.call();
           },
           onDoubleTap: mainEditorCallbacks?.onDoubleTap,
@@ -2181,7 +2181,7 @@ class ProImageEditorState extends State<ProImageEditor>
       stateManager: stateManager,
       interactiveViewerKey: _interactiveViewer,
       state: this,
-      videoManager: _videoManager,
+      videoController: widget.videoController,
       isVideoEditor: _isVideoEditor,
     );
   }
@@ -2276,7 +2276,7 @@ class ProImageEditorState extends State<ProImageEditor>
       isInitialized: _isInitialized,
       sizesManager: sizesManager,
       stateManager: stateManager,
-      videoPlayer: widget.videoPlayer!,
+      videoPlayer: widget.videoController!.videoPlayer,
     );
   }
 }

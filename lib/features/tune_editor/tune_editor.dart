@@ -12,6 +12,7 @@ import '/core/models/transform_helper.dart';
 import '/core/platform/io/io_helper.dart';
 import '/features/tune_editor/widgets/tune_editor_bottombar.dart';
 import '/pro_image_editor.dart';
+import '/shared/controllers/video_controller.dart';
 import '/shared/services/content_recorder/widgets/content_recorder.dart';
 import '/shared/utils/file_constructor_utils.dart';
 import '/shared/widgets/layer/layer_stack.dart';
@@ -45,9 +46,9 @@ class TuneEditor extends StatefulWidget
     super.key,
     required this.initConfigs,
     this.editorImage,
-    this.videoPlayer,
-  }) : assert(editorImage != null || videoPlayer != null,
-            'Either editorImage or videoPlayer must be provided.');
+    this.videoController,
+  }) : assert(editorImage != null || videoController != null,
+            'Either editorImage or videoController must be provided.');
 
   /// Constructs a `TuneEditor` widget with image data loaded from memory.
   factory TuneEditor.memory(
@@ -113,12 +114,12 @@ class TuneEditor extends StatefulWidget
     String? assetPath,
     String? networkUrl,
     EditorImage? editorImage,
-    Widget? videoPlayer,
+    ProVideoController? videoController,
     required TuneEditorInitConfigs initConfigs,
   }) {
     return TuneEditor._(
       key: key,
-      editorImage: videoPlayer != null
+      editorImage: videoController != null
           ? null
           : editorImage ??
               EditorImage(
@@ -127,20 +128,20 @@ class TuneEditor extends StatefulWidget
                 networkUrl: networkUrl,
                 assetPath: assetPath,
               ),
-      videoPlayer: videoPlayer,
+      videoController: videoController,
       initConfigs: initConfigs,
     );
   }
 
   /// Constructs a `BlurEditor` widget with an video player.
   factory TuneEditor.video(
-    Widget videoPlayer, {
+    ProVideoController videoController, {
     Key? key,
     required TuneEditorInitConfigs initConfigs,
   }) {
     return TuneEditor._(
       key: key,
-      videoPlayer: videoPlayer,
+      videoController: videoController,
       initConfigs: initConfigs,
     );
   }
@@ -150,7 +151,7 @@ class TuneEditor extends StatefulWidget
   @override
   final EditorImage? editorImage;
   @override
-  final Widget? videoPlayer;
+  final ProVideoController? videoController;
 
   @override
   createState() => TuneEditorState();
@@ -262,7 +263,7 @@ class TuneEditorState extends State<TuneEditor>
   /// editor.
   void done() async {
     doneEditing(
-      editorImage: editorImage!,
+      editorImage: editorImage,
       returnValue: tuneAdjustmentMatrix,
     );
     tuneEditorCallbacks?.handleDone();
@@ -462,7 +463,7 @@ class TuneEditorState extends State<TuneEditor>
                 height: getMinimumSize(mainImageSize, editorBodySize).height,
                 configs: configs,
                 image: editorImage,
-                videoPlayer: videoPlayer,
+                videoPlayer: videoController?.videoPlayer,
                 filters: appliedFilters,
                 tuneAdjustments: tuneAdjustmentMatrix,
                 blurFactor: appliedBlurFactor,

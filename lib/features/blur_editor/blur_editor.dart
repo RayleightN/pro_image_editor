@@ -14,6 +14,7 @@ import '/core/models/init_configs/blur_editor_init_configs.dart';
 import '/core/models/transform_helper.dart';
 import '/core/platform/io/io_helper.dart';
 import '/features/blur_editor/widgets/blur_editor_bottombar.dart';
+import '/shared/controllers/video_controller.dart';
 import '/shared/services/content_recorder/widgets/content_recorder.dart';
 import '/shared/utils/file_constructor_utils.dart';
 import '/shared/widgets/layer/layer_stack.dart';
@@ -43,9 +44,9 @@ class BlurEditor extends StatefulWidget
     super.key,
     required this.initConfigs,
     this.editorImage,
-    this.videoPlayer,
-  }) : assert(editorImage != null || videoPlayer != null,
-            'Either editorImage or videoPlayer must be provided.');
+    this.videoController,
+  }) : assert(editorImage != null || videoController != null,
+            'Either editorImage or videoController must be provided.');
 
   /// Constructs a `BlurEditor` widget with image data loaded from memory.
   factory BlurEditor.memory(
@@ -110,12 +111,12 @@ class BlurEditor extends StatefulWidget
     String? assetPath,
     String? networkUrl,
     EditorImage? editorImage,
-    Widget? videoPlayer,
+    ProVideoController? videoController,
     required BlurEditorInitConfigs initConfigs,
   }) {
     return BlurEditor._(
       key: key,
-      editorImage: videoPlayer != null
+      editorImage: videoController != null
           ? null
           : editorImage ??
               EditorImage(
@@ -124,20 +125,20 @@ class BlurEditor extends StatefulWidget
                 networkUrl: networkUrl,
                 assetPath: assetPath,
               ),
-      videoPlayer: videoPlayer,
+      videoController: videoController,
       initConfigs: initConfigs,
     );
   }
 
   /// Constructs a `BlurEditor` widget with an video player.
   factory BlurEditor.video(
-    Widget videoPlayer, {
+    ProVideoController videoController, {
     Key? key,
     required BlurEditorInitConfigs initConfigs,
   }) {
     return BlurEditor._(
       key: key,
-      videoPlayer: videoPlayer,
+      videoController: videoController,
       initConfigs: initConfigs,
     );
   }
@@ -147,7 +148,7 @@ class BlurEditor extends StatefulWidget
   @override
   final EditorImage? editorImage;
   @override
-  final Widget? videoPlayer;
+  final ProVideoController? videoController;
 
   @override
   createState() => BlurEditorState();
@@ -300,7 +301,7 @@ class BlurEditorState extends State<BlurEditor>
                                     .height,
                             configs: configs,
                             image: editorImage,
-                            videoPlayer: videoPlayer,
+                            videoPlayer: videoController?.videoPlayer,
                             filters: appliedFilters,
                             tuneAdjustments: appliedTuneAdjustments,
                             blurFactor: blurFactor,

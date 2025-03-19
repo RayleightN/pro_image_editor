@@ -14,6 +14,8 @@ export 'core/models/editor_image.dart';
 export 'core/models/history/state_history.dart';
 
 /// Video editing
+export '/shared/controllers/video_controller.dart';
+export '/shared/widgets/video/export_prebuild/video_editor_prebuild_widgets.dart';
 export '/core/models/editor_callbacks/video_editor_callbacks.dart';
 export '/core/models/editor_configs/video_editor_configs.dart';
 

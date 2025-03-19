@@ -14,7 +14,7 @@ import '/shared/widgets/video/video_editor_controls_widget.dart';
 import '../main_editor.dart';
 import '../services/sizes_manager.dart';
 import '../services/state_manager.dart';
-import '../services/video_manager.dart';
+import '../../../shared/controllers/video_controller.dart';
 import 'main_editor_font_preloader.dart';
 
 /// A widget representing the interactive content area of the main editor,
@@ -60,7 +60,7 @@ class MainEditorInteractiveContent extends StatelessWidget {
     required this.interactiveViewerKey,
     required this.state,
     required this.isVideoEditor,
-    required this.videoManager,
+    required this.videoController,
   });
 
   /// A builder function to create the image widget.
@@ -115,7 +115,7 @@ class MainEditorInteractiveContent extends StatelessWidget {
   final bool isVideoEditor;
 
   /// Manages video-related functionalities within the main editor.
-  final VideoManager videoManager;
+  final ProVideoController? videoController;
 
   @override
   Widget build(BuildContext context) {
@@ -141,8 +141,8 @@ class MainEditorInteractiveContent extends StatelessWidget {
           /// Build video controls
           if (isVideoEditor)
             VideoEditorConfigurable(
-              videoManager: videoManager,
-              child: VideoEditorControlsWidget(),
+              videoManager: videoController!,
+              child: const VideoEditorControlsWidget(),
             ),
 
           /// Build helper content

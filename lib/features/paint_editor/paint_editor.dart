@@ -16,6 +16,7 @@ import '/features/paint_editor/widgets/paint_editor_appbar.dart';
 import '/features/paint_editor/widgets/paint_editor_bottombar.dart';
 import '/features/paint_editor/widgets/paint_editor_color_picker.dart';
 import '/pro_image_editor.dart';
+import '/shared/controllers/video_controller.dart';
 import '/shared/services/content_recorder/widgets/content_recorder.dart';
 import '/shared/services/shader_manager.dart';
 import '/shared/styles/platform_text_styles.dart';
@@ -51,7 +52,7 @@ class PaintEditor extends StatefulWidget
   ///
   /// The [key] parameter is used to provide a key for the widget.
   /// The [editorImage] parameter specifies the image to be edited.
-  /// The [videoPlayer] parameter specifies the video to be edited.
+  /// The [videoController] parameter specifies the video to be edited.
   /// The [initConfigs] parameter specifies the initialization configurations
   /// for the editor.
   const PaintEditor._({
@@ -59,9 +60,9 @@ class PaintEditor extends StatefulWidget
     required this.initConfigs,
     this.paintOnly = false,
     this.editorImage,
-    this.videoPlayer,
-  }) : assert(editorImage != null || videoPlayer != null,
-            'Either editorImage or videoPlayer must be provided.');
+    this.videoController,
+  }) : assert(editorImage != null || videoController != null,
+            'Either editorImage or videoController must be provided.');
 
   /// Constructs a `PaintEditor` widget with image data loaded from memory.
   factory PaintEditor.memory(
@@ -140,12 +141,12 @@ class PaintEditor extends StatefulWidget
     String? assetPath,
     String? networkUrl,
     EditorImage? editorImage,
-    Widget? videoPlayer,
+    ProVideoController? videoController,
     required PaintEditorInitConfigs initConfigs,
   }) {
     return PaintEditor._(
       key: key,
-      editorImage: videoPlayer != null
+      editorImage: videoController != null
           ? null
           : editorImage ??
               EditorImage(
@@ -154,20 +155,20 @@ class PaintEditor extends StatefulWidget
                 networkUrl: networkUrl,
                 assetPath: assetPath,
               ),
-      videoPlayer: videoPlayer,
+      videoController: videoController,
       initConfigs: initConfigs,
     );
   }
 
   /// Constructs a `PaintEditor` widget with an video player.
   factory PaintEditor.video(
-    Widget videoPlayer, {
+    ProVideoController videoController, {
     Key? key,
     required PaintEditorInitConfigs initConfigs,
   }) {
     return PaintEditor._(
       key: key,
-      videoPlayer: videoPlayer,
+      videoController: videoController,
       initConfigs: initConfigs,
     );
   }
@@ -177,7 +178,7 @@ class PaintEditor extends StatefulWidget
   @override
   final EditorImage? editorImage;
   @override
-  final Widget? videoPlayer;
+  final ProVideoController? videoController;
 
   /// A flag indicating whether only paint operations are allowed.
   final bool paintOnly;
@@ -782,7 +783,7 @@ class PaintEditorState extends State<PaintEditor>
                         getMinimumSize(mainImageSize, editorBodySize).height,
                     configs: configs,
                     image: editorImage,
-                    videoPlayer: videoPlayer,
+                    videoPlayer: videoController?.videoPlayer,
                     filters: appliedFilters,
                     tuneAdjustments: appliedTuneAdjustments,
                     blurFactor: appliedBlurFactor,

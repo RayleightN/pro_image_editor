@@ -6,6 +6,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart' hide Image;
 import 'package:flutter/services.dart';
+import 'package:pro_image_editor/shared/controllers/video_controller.dart';
 
 import '/core/mixins/converted_callbacks.dart';
 import '/core/mixins/converted_configs.dart';
@@ -65,9 +66,9 @@ class CropRotateEditor extends StatefulWidget
     super.key,
     required this.initConfigs,
     this.editorImage,
-    this.videoPlayer,
-  }) : assert(editorImage != null || videoPlayer != null,
-            'Either editorImage or videoPlayer must be provided.');
+    this.videoController,
+  }) : assert(editorImage != null || videoController != null,
+            'Either editorImage or videoController must be provided.');
 
   /// Constructs a `CropRotateEditor` widget with image data loaded from memory.
   factory CropRotateEditor.memory(
@@ -133,12 +134,12 @@ class CropRotateEditor extends StatefulWidget
     String? assetPath,
     String? networkUrl,
     EditorImage? editorImage,
-    Widget? videoPlayer,
+    ProVideoController? videoController,
     required CropRotateEditorInitConfigs initConfigs,
   }) {
     return CropRotateEditor._(
       key: key,
-      editorImage: videoPlayer != null
+      editorImage: videoController != null
           ? null
           : editorImage ??
               EditorImage(
@@ -147,20 +148,20 @@ class CropRotateEditor extends StatefulWidget
                 networkUrl: networkUrl,
                 assetPath: assetPath,
               ),
-      videoPlayer: videoPlayer,
+      videoController: videoController,
       initConfigs: initConfigs,
     );
   }
 
   /// Constructs a `BlurEditor` widget with an video player.
   factory CropRotateEditor.video(
-    Widget videoPlayer, {
+    ProVideoController videoController, {
     Key? key,
     required CropRotateEditorInitConfigs initConfigs,
   }) {
     return CropRotateEditor._(
       key: key,
-      videoPlayer: videoPlayer,
+      videoController: videoController,
       initConfigs: initConfigs,
     );
   }
@@ -170,7 +171,7 @@ class CropRotateEditor extends StatefulWidget
   @override
   final EditorImage? editorImage;
   @override
-  final Widget? videoPlayer;
+  final ProVideoController? videoController;
 
   @override
   State<CropRotateEditor> createState() => CropRotateEditorState();
@@ -2289,7 +2290,7 @@ class CropRotateEditorState extends State<CropRotateEditor>
                 width: _imgWidth,
                 height: _imgHeight,
                 image: editorImage,
-                videoPlayer: videoPlayer,
+                videoPlayer: videoController?.videoPlayer,
               ),
               if (cropRotateEditorConfigs.showLayers &&
                   cropRotateEditorConfigs.enableTransformLayers &&
@@ -2337,7 +2338,7 @@ class CropRotateEditorState extends State<CropRotateEditor>
                   height: _mainImageSize.height,
                   configs: configs,
                   image: editorImage,
-                  videoPlayer: videoPlayer,
+                  videoPlayer: videoController?.videoPlayer,
                   filters: appliedFilters,
                   tuneAdjustments: appliedTuneAdjustments,
                   blurFactor: appliedBlurFactor,
@@ -2380,7 +2381,7 @@ class CropRotateEditorState extends State<CropRotateEditor>
           height: h,
           configs: configs,
           image: editorImage,
-          videoPlayer: videoPlayer,
+          videoPlayer: videoController?.videoPlayer,
           filters: appliedFilters,
           tuneAdjustments: appliedTuneAdjustments,
           blurFactor: appliedBlurFactor,

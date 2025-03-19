@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import '/core/mixins/converted_callbacks.dart';
 import '/features/filter_editor/types/filter_matrix.dart';
 import '/features/tune_editor/models/tune_adjustment_matrix.dart';
+import '/shared/controllers/video_controller.dart';
 import '/shared/services/content_recorder/controllers/content_recorder_controller.dart';
 import '/shared/utils/decode_image.dart';
 import '/shared/widgets/overlays/loading_dialog/loading_dialog.dart';
@@ -30,7 +31,7 @@ mixin StandaloneEditor<T extends EditorInitConfigs> {
   /// Returns the editor image
   EditorImage? get editorImage;
 
-  Widget? get videoPlayer;
+  ProVideoController? get videoController;
 }
 
 /// A mixin providing access to standalone editor configurations and image
@@ -44,8 +45,9 @@ mixin StandaloneEditorState<T extends StatefulWidget,
   /// Returns the image being edited.
   EditorImage? get editorImage => (widget as StandaloneEditor<I>).editorImage;
 
-  /// Returns the video being edited.
-  Widget? get videoPlayer => (widget as StandaloneEditor<I>).videoPlayer;
+  /// Returns the controller to edit the video.
+  ProVideoController? get videoController =>
+      (widget as StandaloneEditor<I>).videoController;
 
   @override
   ProImageEditorConfigs get configs => initConfigs.configs;

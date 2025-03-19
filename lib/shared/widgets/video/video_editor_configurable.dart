@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 import '/core/models/editor_callbacks/video_editor_callbacks.dart';
 import '/core/models/editor_configs/video_editor_configs.dart';
-import '/features/main_editor/services/video_manager.dart';
+import '../../controllers/video_controller.dart';
 
 class VideoEditorConfigurable extends InheritedWidget {
   const VideoEditorConfigurable({
@@ -11,7 +11,7 @@ class VideoEditorConfigurable extends InheritedWidget {
     required this.videoManager,
   });
 
-  final VideoManager videoManager;
+  final ProVideoController videoManager;
 
   VideoEditorConfigs get configs => videoManager.configs;
   VideoEditorCallbacks get callbacks => videoManager.callbacks;
@@ -19,9 +19,9 @@ class VideoEditorConfigurable extends InheritedWidget {
   ValueNotifier<bool> get isPlayingNotifier => videoManager.isPlayingNotifier;
   ValueNotifier<bool> get isMutedNotifier => videoManager.isMutedNotifier;
 
-  VideoEditorIcons get icons => videoManager.icons;
-  VideoEditorStyle get style => videoManager.style;
-  VideoEditorWidgets get widgets => videoManager.widgets;
+  VideoEditorIcons get icons => configs.icons;
+  VideoEditorStyle get style => configs.style;
+  VideoEditorWidgets get widgets => configs.widgets;
 
   static VideoEditorConfigurable of(BuildContext context) {
     final config = maybeOf(context);
