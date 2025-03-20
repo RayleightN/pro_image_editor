@@ -58,6 +58,8 @@ class _VideoPlayerExampleState extends State<VideoPlayerExample>
       pixelRatio: MediaQuery.devicePixelRatioOf(context),
     );
 
+    totalVideoDuration = duration;
+
     proVideoController = ProVideoController(
       videoPlayer: _buildVideoPlayer(),
       initialResolution: _videoController.value.size,
@@ -75,8 +77,12 @@ class _VideoPlayerExampleState extends State<VideoPlayerExample>
     var duration = _videoController.value.position;
     proVideoController!.setPlayTime(duration);
 
-    if (durationSpan != null && duration > durationSpan!.end) {
+    if (durationSpan != null && duration >= durationSpan!.end) {
       _seekToPosition(durationSpan!);
+    } else if (totalVideoDuration != null && duration >= totalVideoDuration!) {
+      _seekToPosition(
+        TrimDurationSpan(start: Duration.zero, end: totalVideoDuration!),
+      );
     }
   }
 

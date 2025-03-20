@@ -77,6 +77,8 @@ class _FlickVideoPlayerExampleState extends State<FlickVideoPlayerExample>
       pixelRatio: MediaQuery.devicePixelRatioOf(context),
     );
 
+    totalVideoDuration = videoDuration;
+
     proVideoController = ProVideoController(
       videoPlayer: _buildVideoPlayer(),
       initialResolution:
@@ -96,6 +98,10 @@ class _FlickVideoPlayerExampleState extends State<FlickVideoPlayerExample>
 
     if (durationSpan != null && duration > durationSpan!.end) {
       _seekToPosition(durationSpan!);
+    } else if (totalVideoDuration != null && duration >= totalVideoDuration!) {
+      _seekToPosition(
+        TrimDurationSpan(start: Duration.zero, end: totalVideoDuration!),
+      );
     }
   }
 

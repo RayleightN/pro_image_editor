@@ -31,6 +31,8 @@ mixin ThumbnailGeneratorMixin {
   /// Controls video playback and trimming functionalities.
   ProVideoController? proVideoController;
 
+  Duration? totalVideoDuration;
+
   /// Stores generated thumbnails for the trimmer bar and filter background.
   final List<ImageProvider> thumbnails = [];
 

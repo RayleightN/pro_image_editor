@@ -65,6 +65,8 @@ class _ChewiePlayerExampleState extends State<ChewiePlayerExample>
       pixelRatio: MediaQuery.devicePixelRatioOf(context),
     );
 
+    totalVideoDuration = videoDuration;
+
     proVideoController = ProVideoController(
       videoPlayer: _buildVideoPlayer(),
       initialResolution: _chewieController.videoPlayerController.value.size,
@@ -83,6 +85,10 @@ class _ChewiePlayerExampleState extends State<ChewiePlayerExample>
     proVideoController!.setPlayTime(duration);
     if (durationSpan != null && duration > durationSpan!.end) {
       _seekToPosition(durationSpan!);
+    } else if (totalVideoDuration != null && duration >= totalVideoDuration!) {
+      _seekToPosition(
+        TrimDurationSpan(start: Duration.zero, end: totalVideoDuration!),
+      );
     }
   }
 
