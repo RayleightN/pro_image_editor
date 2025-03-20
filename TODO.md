@@ -1,0 +1,13 @@
+- Video-Editor
+    - Generate Native Output File
+        - Web
+        - Android
+        - iOS
+        - macOS
+        - Linux
+        - Windows
+    - Generate Thumbnails
+        - Implement a native solution
+    - Fix Web Video Player (May require a new native solution)
+    - Improve Playtime Indicator
+        - Implement a smoother movement animation

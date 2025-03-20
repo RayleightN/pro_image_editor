@@ -66,12 +66,22 @@ class _FlickVideoPlayerExampleState extends State<FlickVideoPlayerExample>
         _playerValue!.size.isEmpty ||
         _playerValue!.duration.inSeconds == 0);
 
+    if (!mounted) return;
+    Duration videoDuration =
+        _flickManager.flickVideoManager!.videoPlayerValue!.duration;
+
+    await generateThumbnails(
+      bytes: bytes,
+      duration: videoDuration,
+      editorWidth: MediaQuery.sizeOf(context).width,
+      pixelRatio: MediaQuery.devicePixelRatioOf(context),
+    );
+
     proVideoController = ProVideoController(
       videoPlayer: _buildVideoPlayer(),
       initialResolution:
           _flickManager.flickVideoManager!.videoPlayerValue!.size,
-      videoDuration:
-          _flickManager.flickVideoManager!.videoPlayerValue!.duration,
+      videoDuration: videoDuration,
       fileSize: bytes.lengthInBytes,
       thumbnails: thumbnails,
     );

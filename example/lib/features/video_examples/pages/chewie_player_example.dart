@@ -54,10 +54,21 @@ class _ChewiePlayerExampleState extends State<ChewiePlayerExample>
     var bytes = await loadAssetImageAsUint8List(kVideoEditorExampleAssetPath);
     await _chewieController.setVolume(videoConfigs.initialMuted ? 0 : 100);
 
+    if (!mounted) return;
+    Duration videoDuration =
+        _chewieController.videoPlayerController.value.duration;
+
+    await generateThumbnails(
+      bytes: bytes,
+      duration: videoDuration,
+      editorWidth: MediaQuery.sizeOf(context).width,
+      pixelRatio: MediaQuery.devicePixelRatioOf(context),
+    );
+
     proVideoController = ProVideoController(
       videoPlayer: _buildVideoPlayer(),
       initialResolution: _chewieController.videoPlayerController.value.size,
-      videoDuration: _chewieController.videoPlayerController.value.duration,
+      videoDuration: videoDuration,
       fileSize: bytes.lengthInBytes,
       thumbnails: thumbnails,
     );

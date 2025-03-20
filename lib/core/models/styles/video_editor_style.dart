@@ -30,6 +30,15 @@ class VideoEditorStyle {
     this.trimBarHandlerWidth = 20,
     this.trimBarHandlerRadius = 5,
     this.trimBarBorderWidth = 3,
+    this.trimBarGradientBackground = const LinearGradient(
+      colors: [
+        Color(0xFF1E1E1E), // Dark gray
+        Color(0xFF292929), // Slightly lighter gray
+        Color(0xFF121212), // Near black
+      ],
+      begin: Alignment.topLeft,
+      end: Alignment.bottomRight,
+    ),
   });
 
   /// Color of the play indicator icon.
@@ -74,6 +83,11 @@ class VideoEditorStyle {
   /// Background color of the trim bar.
   final Color trimBarBackground;
 
+  /// The gradient will only be visible if no thumbnails are added.
+  /// For the best user experience, it is recommended to add multiple
+  /// thumbnails from different timestamps.
+  final Gradient trimBarGradientBackground;
+
   /// Background color of the area outside the trim bar.
   final Color trimBarOutsideAreaBackground;
 
@@ -114,6 +128,7 @@ class VideoEditorStyle {
     Color? trimBarTextBackground,
     Color? trimBarColor,
     Color? trimBarBackground,
+    Gradient? trimBarGradientBackground,
     Color? trimBarOutsideAreaBackground,
     double? trimBarHeight,
     double? trimBarBorderWidth,
@@ -143,6 +158,8 @@ class VideoEditorStyle {
           trimBarTextBackground ?? this.trimBarTextBackground,
       trimBarColor: trimBarColor ?? this.trimBarColor,
       trimBarBackground: trimBarBackground ?? this.trimBarBackground,
+      trimBarGradientBackground:
+          trimBarGradientBackground ?? this.trimBarGradientBackground,
       trimBarOutsideAreaBackground:
           trimBarOutsideAreaBackground ?? this.trimBarOutsideAreaBackground,
       trimBarHeight: trimBarHeight ?? this.trimBarHeight,

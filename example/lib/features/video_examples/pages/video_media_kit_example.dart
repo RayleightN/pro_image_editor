@@ -104,6 +104,14 @@ class _VideoMediaKitExampleState extends State<VideoMediaKitExample>
     await durationCompleter.future;
     await resolutionCompleter.future;
 
+    if (!mounted) return;
+    await generateThumbnails(
+      bytes: bytes,
+      duration: videoDuration,
+      editorWidth: MediaQuery.sizeOf(context).width,
+      pixelRatio: MediaQuery.devicePixelRatioOf(context),
+    );
+
     proVideoController = ProVideoController(
       videoPlayer: _buildVideoPlayer(),
       initialResolution: initialSize,
@@ -111,6 +119,8 @@ class _VideoMediaKitExampleState extends State<VideoMediaKitExample>
       fileSize: bytes.lengthInBytes,
       thumbnails: thumbnails,
     );
+
+    setState(() {});
   }
 
   Future<void> _seekToPosition(TrimDurationSpan span) async {

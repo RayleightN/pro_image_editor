@@ -16,10 +16,11 @@ class VideoEditorTrimThumbnailBar extends StatelessWidget {
       clipBehavior: Clip.hardEdge,
       height: player.style.trimBarHeight,
       decoration: BoxDecoration(
-        color: const Color.fromARGB(255, 51, 51, 51),
+        gradient: player.style.trimBarGradientBackground,
         borderRadius: BorderRadius.circular(player.style.trimBarHandlerRadius),
       ),
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: player.controller.thumbnails.map((item) {
           return Expanded(
             child: Image(

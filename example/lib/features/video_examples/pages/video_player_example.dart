@@ -36,7 +36,9 @@ class _VideoPlayerExampleState extends State<VideoPlayerExample>
   void _initializePlayer() async {
     _videoController =
         VideoPlayerController.asset(kVideoEditorExampleAssetPath);
+
     var bytes = await loadAssetImageAsUint8List(kVideoEditorExampleAssetPath);
+
     await _videoController.initialize();
     await _videoController.setLooping(false);
     await _videoController.setVolume(videoConfigs.initialMuted ? 0 : 100);
@@ -46,10 +48,20 @@ class _VideoPlayerExampleState extends State<VideoPlayerExample>
       await _videoController.pause();
     }
 
+    Duration duration = _videoController.value.duration;
+
+    if (!mounted) return;
+    await generateThumbnails(
+      bytes: bytes,
+      duration: duration,
+      editorWidth: MediaQuery.sizeOf(context).width,
+      pixelRatio: MediaQuery.devicePixelRatioOf(context),
+    );
+
     proVideoController = ProVideoController(
       videoPlayer: _buildVideoPlayer(),
       initialResolution: _videoController.value.size,
-      videoDuration: _videoController.value.duration,
+      videoDuration: duration,
       fileSize: bytes.lengthInBytes,
       thumbnails: thumbnails,
     );
