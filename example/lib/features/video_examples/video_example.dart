@@ -23,21 +23,43 @@ class _VideoExampleState extends State<VideoExample>
     with ExampleHelperState<VideoExample> {
   final _isWebEditingSupported = false;
 
-  late final bool _isVideoPlayerSupported =
-      (kIsWeb && _isWebEditingSupported) ||
+  late final _videoPackages = [
+    _Package(
+      title: 'Package "media_kit"',
+      enabled: true,
+      example: const VideoMediaKitExample(),
+    ),
+    _Package(
+      title: 'Package "video_player"',
+      enabled: (kIsWeb && _isWebEditingSupported) ||
           Platform.isAndroid ||
           Platform.isIOS ||
-          Platform.isMacOS;
-  late final bool _isFlickPlayerSupported =
-      (kIsWeb && _isWebEditingSupported) ||
+          Platform.isMacOS,
+      example: const VideoPlayerExample(),
+    ),
+    _Package(
+      title: 'Package "flick_video_player"',
+      enabled: (kIsWeb && _isWebEditingSupported) ||
           Platform.isAndroid ||
           Platform.isIOS ||
-          Platform.isMacOS;
-  late final bool _isChewiePlayerSupported =
-      (kIsWeb && _isWebEditingSupported) ||
+          Platform.isMacOS,
+      example: const FlickVideoPlayerExample(),
+    ),
+    _Package(
+      title: 'Package "chewie"',
+      enabled: (kIsWeb && _isWebEditingSupported) ||
           Platform.isAndroid ||
           Platform.isIOS ||
-          Platform.isMacOS;
+          Platform.isMacOS,
+      example: const ChewiePlayerExample(),
+    ),
+  ];
+
+  void _openExample(Widget page) {
+    Navigator.of(context).push(
+      MaterialPageRoute(builder: (context) => page),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -71,66 +93,16 @@ class _VideoExampleState extends State<VideoExample>
               'well as their pros and cons, before making a decision.',
             ),
           ),
-          ListTile(
-            leading: const Icon(Icons.movie),
-            title: const Text('Package "media_kit"'),
-            trailing: const Icon(Icons.chevron_right),
-            onTap: () {
-              Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (context) => const VideoMediaKitExample(),
-                ),
-              );
-            },
-          ),
-          ListTile(
-            enabled: _isVideoPlayerSupported,
-            leading: const Icon(Icons.movie),
-            title: const Text('Package "video_player"'),
-            subtitle: _isVideoPlayerSupported ? null : _buildNotSupportedMsg(),
-            trailing: const Icon(Icons.chevron_right),
-            onTap: _isVideoPlayerSupported
-                ? () {
-                    Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (context) => const VideoPlayerExample(),
-                      ),
-                    );
-                  }
-                : null,
-          ),
-          ListTile(
-            enabled: _isFlickPlayerSupported,
-            leading: const Icon(Icons.movie),
-            title: const Text('Package "flick_video_player"'),
-            subtitle: _isFlickPlayerSupported ? null : _buildNotSupportedMsg(),
-            trailing: const Icon(Icons.chevron_right),
-            onTap: _isFlickPlayerSupported
-                ? () {
-                    Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (context) => const FlickVideoPlayerExample(),
-                      ),
-                    );
-                  }
-                : null,
-          ),
-          ListTile(
-            enabled: _isChewiePlayerSupported,
-            leading: const Icon(Icons.movie),
-            title: const Text('Package "chewie"'),
-            subtitle: _isChewiePlayerSupported ? null : _buildNotSupportedMsg(),
-            trailing: const Icon(Icons.chevron_right),
-            onTap: _isChewiePlayerSupported
-                ? () {
-                    Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (context) => const ChewiePlayerExample(),
-                      ),
-                    );
-                  }
-                : null,
-          ),
+          ..._videoPackages.map((pkg) {
+            return ListTile(
+              enabled: pkg.enabled,
+              leading: const Icon(Icons.movie),
+              title: Text(pkg.title),
+              subtitle: pkg.enabled ? null : _buildNotSupportedMsg(),
+              trailing: const Icon(Icons.chevron_right),
+              onTap: pkg.enabled ? () => _openExample(pkg.example) : null,
+            );
+          }),
         ],
       ),
     );
@@ -139,4 +111,15 @@ class _VideoExampleState extends State<VideoExample>
   Widget _buildNotSupportedMsg() {
     return const Text('This package is not supported on that platform.');
   }
+}
+
+class _Package {
+  _Package({
+    required this.title,
+    required this.enabled,
+    required this.example,
+  });
+  final String title;
+  final bool enabled;
+  final Widget example;
 }
