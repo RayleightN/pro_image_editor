@@ -72,7 +72,12 @@ class _VideoPlayerExampleState extends State<VideoPlayerExample>
   }
 
   void _onDurationChange() {
-    proVideoController!.setPlayTime(_videoController.value.position);
+    var duration = _videoController.value.position;
+    proVideoController!.setPlayTime(duration);
+
+    if (durationSpan != null && duration > durationSpan!.end) {
+      _seekToPosition(durationSpan!);
+    }
   }
 
   Future<void> _seekToPosition(TrimDurationSpan span) async {

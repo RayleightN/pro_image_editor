@@ -79,9 +79,11 @@ class _ChewiePlayerExampleState extends State<ChewiePlayerExample>
   }
 
   void _onDurationChange() {
-    proVideoController!.setPlayTime(
-      _chewieController.videoPlayerController.value.position,
-    );
+    var duration = _chewieController.videoPlayerController.value.position;
+    proVideoController!.setPlayTime(duration);
+    if (durationSpan != null && duration > durationSpan!.end) {
+      _seekToPosition(durationSpan!);
+    }
   }
 
   Future<void> _seekToPosition(TrimDurationSpan span) async {

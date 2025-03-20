@@ -91,9 +91,12 @@ class _FlickVideoPlayerExampleState extends State<FlickVideoPlayerExample>
   }
 
   void _onDurationChange() {
-    proVideoController!.setPlayTime(
-      _flickManager.flickVideoManager!.videoPlayerValue!.position,
-    );
+    var duration = _flickManager.flickVideoManager!.videoPlayerValue!.position;
+    proVideoController!.setPlayTime(duration);
+
+    if (durationSpan != null && duration > durationSpan!.end) {
+      _seekToPosition(durationSpan!);
+    }
   }
 
   Future<void> _seekToPosition(TrimDurationSpan span) async {
