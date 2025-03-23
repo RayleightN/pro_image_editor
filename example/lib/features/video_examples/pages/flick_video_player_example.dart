@@ -1,10 +1,11 @@
 import 'package:flick_video_player/flick_video_player.dart';
 import 'package:flutter/material.dart';
 import 'package:pro_image_editor/pro_image_editor.dart';
+import 'package:pro_video_editor/pro_video_editor.dart';
 import 'package:video_player/video_player.dart';
 
 import '/core/constants/example_constants.dart';
-import '../mixins/thumbnail_generator_mixin.dart';
+import '../mixins/video_editor_mixin.dart';
 import '../widgets/video_initializing_widget.dart';
 
 /// A widget that demonstrates video playback using the Flick video player.
@@ -20,7 +21,7 @@ class FlickVideoPlayerExample extends StatefulWidget {
 }
 
 class _FlickVideoPlayerExampleState extends State<FlickVideoPlayerExample>
-    with ThumbnailGeneratorMixin {
+    with VideoEditorMixin {
   late FlickManager _flickManager;
 
   @override
@@ -35,11 +36,13 @@ class _FlickVideoPlayerExampleState extends State<FlickVideoPlayerExample>
     super.dispose();
   }
 
-  VideoPlayerValue? get _playerValue {
-    return _flickManager.flickVideoManager?.videoPlayerValue;
-  }
-
   void _initializePlayer() async {
+    EditorVideo video = EditorVideo(assetPath: kVideoEditorExampleAssetPath);
+
+    await setVideoInformations(video);
+    await generateThumbnails(video);
+    if (!mounted) return;
+
     _flickManager = FlickManager(
       videoPlayerController:
           VideoPlayerController.asset(kVideoEditorExampleAssetPath),
@@ -52,39 +55,16 @@ class _FlickVideoPlayerExampleState extends State<FlickVideoPlayerExample>
       },
     );
 
-    var bytes = await loadAssetImageAsUint8List(kVideoEditorExampleAssetPath);
-
     await _flickManager.flickControlManager?.setVolume(
       videoConfigs.initialMuted ? 0.0 : 100.0,
       isMute: videoConfigs.initialMuted,
     );
 
-    do {
-      await Future.delayed(const Duration(milliseconds: 30));
-    } while (_playerValue?.size == null ||
-        _playerValue?.duration == null ||
-        _playerValue!.size.isEmpty ||
-        _playerValue!.duration.inSeconds == 0);
-
-    if (!mounted) return;
-    Duration videoDuration =
-        _flickManager.flickVideoManager!.videoPlayerValue!.duration;
-
-    await generateThumbnails(
-      bytes: bytes,
-      duration: videoDuration,
-      editorWidth: MediaQuery.sizeOf(context).width,
-      pixelRatio: MediaQuery.devicePixelRatioOf(context),
-    );
-
-    totalVideoDuration = videoDuration;
-
     proVideoController = ProVideoController(
       videoPlayer: _buildVideoPlayer(),
-      initialResolution:
-          _flickManager.flickVideoManager!.videoPlayerValue!.size,
-      videoDuration: videoDuration,
-      fileSize: bytes.lengthInBytes,
+      initialResolution: videoInformation.resolution,
+      videoDuration: videoInformation.duration,
+      fileSize: videoInformation.fileSize,
       thumbnails: thumbnails,
     );
     _flickManager.flickVideoManager!.videoPlayerController!
@@ -93,14 +73,15 @@ class _FlickVideoPlayerExampleState extends State<FlickVideoPlayerExample>
   }
 
   void _onDurationChange() {
+    var totalVideoDuration = videoInformation.duration;
     var duration = _flickManager.flickVideoManager!.videoPlayerValue!.position;
     proVideoController!.setPlayTime(duration);
 
     if (durationSpan != null && duration > durationSpan!.end) {
       _seekToPosition(durationSpan!);
-    } else if (totalVideoDuration != null && duration >= totalVideoDuration!) {
+    } else if (duration >= totalVideoDuration) {
       _seekToPosition(
-        TrimDurationSpan(start: Duration.zero, end: totalVideoDuration!),
+        TrimDurationSpan(start: Duration.zero, end: totalVideoDuration),
       );
     }
   }
@@ -134,9 +115,8 @@ class _FlickVideoPlayerExampleState extends State<FlickVideoPlayerExample>
   Widget build(BuildContext context) {
     return AnimatedSwitcher(
       duration: const Duration(milliseconds: 220),
-      child: proVideoController == null ||
-              _flickManager.flickVideoManager?.isVideoInitialized != true
-          ? VideoInitializingWidget(player: _buildVideoPlayer())
+      child: proVideoController == null
+          ? const VideoInitializingWidget()
           : ProImageEditor.video(
               proVideoController!,
               callbacks: ProImageEditorCallbacks(

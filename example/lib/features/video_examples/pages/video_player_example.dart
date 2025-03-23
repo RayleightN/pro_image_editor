@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:pro_image_editor/pro_image_editor.dart';
+import 'package:pro_video_editor/pro_video_editor.dart';
 import 'package:video_player/video_player.dart';
 
 import '/core/constants/example_constants.dart';
-import '/features/video_examples/mixins/thumbnail_generator_mixin.dart';
-import '/features/video_examples/widgets/video_initializing_widget.dart';
+import '../mixins/video_editor_mixin.dart';
+import '../widgets/video_initializing_widget.dart';
 
 /// A widget that demonstrates video playback functionality.
 ///
@@ -18,7 +19,7 @@ class VideoPlayerExample extends StatefulWidget {
 }
 
 class _VideoPlayerExampleState extends State<VideoPlayerExample>
-    with ThumbnailGeneratorMixin {
+    with VideoEditorMixin {
   late VideoPlayerController _videoController;
 
   @override
@@ -34,10 +35,14 @@ class _VideoPlayerExampleState extends State<VideoPlayerExample>
   }
 
   void _initializePlayer() async {
+    EditorVideo video = EditorVideo(assetPath: kVideoEditorExampleAssetPath);
+
+    await setVideoInformations(video);
+    await generateThumbnails(video);
+    if (!mounted) return;
+
     _videoController =
         VideoPlayerController.asset(kVideoEditorExampleAssetPath);
-
-    var bytes = await loadAssetImageAsUint8List(kVideoEditorExampleAssetPath);
 
     await _videoController.initialize();
     await _videoController.setLooping(false);
@@ -48,23 +53,11 @@ class _VideoPlayerExampleState extends State<VideoPlayerExample>
       await _videoController.pause();
     }
 
-    Duration duration = _videoController.value.duration;
-
-    if (!mounted) return;
-    await generateThumbnails(
-      bytes: bytes,
-      duration: duration,
-      editorWidth: MediaQuery.sizeOf(context).width,
-      pixelRatio: MediaQuery.devicePixelRatioOf(context),
-    );
-
-    totalVideoDuration = duration;
-
     proVideoController = ProVideoController(
       videoPlayer: _buildVideoPlayer(),
-      initialResolution: _videoController.value.size,
-      videoDuration: duration,
-      fileSize: bytes.lengthInBytes,
+      initialResolution: videoInformation.resolution,
+      videoDuration: videoInformation.duration,
+      fileSize: videoInformation.fileSize,
       thumbnails: thumbnails,
     );
 
@@ -74,14 +67,15 @@ class _VideoPlayerExampleState extends State<VideoPlayerExample>
   }
 
   void _onDurationChange() {
+    var totalVideoDuration = videoInformation.duration;
     var duration = _videoController.value.position;
     proVideoController!.setPlayTime(duration);
 
     if (durationSpan != null && duration >= durationSpan!.end) {
       _seekToPosition(durationSpan!);
-    } else if (totalVideoDuration != null && duration >= totalVideoDuration!) {
+    } else if (duration >= totalVideoDuration) {
       _seekToPosition(
-        TrimDurationSpan(start: Duration.zero, end: totalVideoDuration!),
+        TrimDurationSpan(start: Duration.zero, end: totalVideoDuration),
       );
     }
   }
@@ -115,7 +109,7 @@ class _VideoPlayerExampleState extends State<VideoPlayerExample>
   Widget build(BuildContext context) {
     return AnimatedSwitcher(
       duration: const Duration(milliseconds: 220),
-      child: proVideoController == null || !_videoController.value.isInitialized
+      child: proVideoController == null
           ? const VideoInitializingWidget()
           : ProImageEditor.video(
               proVideoController!,

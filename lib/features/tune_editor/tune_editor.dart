@@ -452,6 +452,7 @@ class TuneEditorState extends State<TuneEditor>
       tag: heroTag,
       createRectTween: (begin, end) => RectTween(begin: begin, end: end),
       child: TransformedContentGenerator(
+        isVideoPlayer: videoController != null,
         configs: configs,
         transformConfigs: initialTransformConfigs ?? TransformConfigs.empty(),
         child: StreamBuilder(

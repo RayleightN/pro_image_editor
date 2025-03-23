@@ -1,11 +1,12 @@
 import 'package:chewie/chewie.dart';
 import 'package:flutter/material.dart';
 import 'package:pro_image_editor/pro_image_editor.dart';
+import 'package:pro_video_editor/pro_video_editor.dart';
 import 'package:video_player/video_player.dart';
 
 import '/core/constants/example_constants.dart';
-import '/features/video_examples/mixins/thumbnail_generator_mixin.dart';
-import '/features/video_examples/widgets/video_initializing_widget.dart';
+import '../mixins/video_editor_mixin.dart';
+import '../widgets/video_initializing_widget.dart';
 
 /// A widget that demonstrates video playback using the Chewie player.
 ///
@@ -19,7 +20,7 @@ class ChewiePlayerExample extends StatefulWidget {
 }
 
 class _ChewiePlayerExampleState extends State<ChewiePlayerExample>
-    with ThumbnailGeneratorMixin {
+    with VideoEditorMixin {
   late ChewieController _chewieController;
   late VideoPlayerController _videoPlayerController;
 
@@ -37,6 +38,12 @@ class _ChewiePlayerExampleState extends State<ChewiePlayerExample>
   }
 
   void _initializePlayer() async {
+    EditorVideo video = EditorVideo(assetPath: kVideoEditorExampleAssetPath);
+
+    await setVideoInformations(video);
+    await generateThumbnails(video);
+    if (!mounted) return;
+
     _videoPlayerController =
         VideoPlayerController.asset(kVideoEditorExampleAssetPath);
 
@@ -51,27 +58,13 @@ class _ChewiePlayerExampleState extends State<ChewiePlayerExample>
       showControlsOnInitialize: false,
       showSubtitles: false,
     );
-    var bytes = await loadAssetImageAsUint8List(kVideoEditorExampleAssetPath);
     await _chewieController.setVolume(videoConfigs.initialMuted ? 0 : 100);
-
-    if (!mounted) return;
-    Duration videoDuration =
-        _chewieController.videoPlayerController.value.duration;
-
-    await generateThumbnails(
-      bytes: bytes,
-      duration: videoDuration,
-      editorWidth: MediaQuery.sizeOf(context).width,
-      pixelRatio: MediaQuery.devicePixelRatioOf(context),
-    );
-
-    totalVideoDuration = videoDuration;
 
     proVideoController = ProVideoController(
       videoPlayer: _buildVideoPlayer(),
-      initialResolution: _chewieController.videoPlayerController.value.size,
-      videoDuration: videoDuration,
-      fileSize: bytes.lengthInBytes,
+      initialResolution: videoInformation.resolution,
+      videoDuration: videoInformation.duration,
+      fileSize: videoInformation.fileSize,
       thumbnails: thumbnails,
     );
 
@@ -81,13 +74,14 @@ class _ChewiePlayerExampleState extends State<ChewiePlayerExample>
   }
 
   void _onDurationChange() {
+    var totalVideoDuration = videoInformation.duration;
     var duration = _chewieController.videoPlayerController.value.position;
     proVideoController!.setPlayTime(duration);
     if (durationSpan != null && duration > durationSpan!.end) {
       _seekToPosition(durationSpan!);
-    } else if (totalVideoDuration != null && duration >= totalVideoDuration!) {
+    } else if (duration >= totalVideoDuration) {
       _seekToPosition(
-        TrimDurationSpan(start: Duration.zero, end: totalVideoDuration!),
+        TrimDurationSpan(start: Duration.zero, end: totalVideoDuration),
       );
     }
   }
@@ -121,8 +115,7 @@ class _ChewiePlayerExampleState extends State<ChewiePlayerExample>
   Widget build(BuildContext context) {
     return AnimatedSwitcher(
       duration: const Duration(milliseconds: 220),
-      child: proVideoController == null ||
-              !_chewieController.videoPlayerController.value.isInitialized
+      child: proVideoController == null
           ? const VideoInitializingWidget()
           : ProImageEditor.video(
               proVideoController!,

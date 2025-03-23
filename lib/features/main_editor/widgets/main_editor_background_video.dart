@@ -56,6 +56,7 @@ class MainEditorBackgroundVideo extends StatelessWidget {
       child: !isInitialized
           ? videoPlayer
           : TransformedContentGenerator(
+              isVideoPlayer: true,
               transformConfigs: stateManager.transformConfigs,
               configs: configs,
               child: FilteredWidget(

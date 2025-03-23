@@ -287,6 +287,7 @@ class BlurEditorState extends State<BlurEditor>
                   createRectTween: (begin, end) =>
                       RectTween(begin: begin, end: end),
                   child: TransformedContentGenerator(
+                    isVideoPlayer: videoController != null,
                     configs: configs,
                     transformConfigs:
                         initialTransformConfigs ?? TransformConfigs.empty(),

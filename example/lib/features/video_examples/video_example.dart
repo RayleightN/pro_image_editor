@@ -1,6 +1,7 @@
 // Flutter imports:
 import 'dart:io';
 
+import 'package:example/shared/widgets/paragraph_info_widget.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
@@ -26,31 +27,28 @@ class _VideoExampleState extends State<VideoExample>
   late final _videoPackages = [
     _Package(
       title: 'Package "media_kit"',
-      enabled: true,
+      enabled: !kIsWeb || _isWebEditingSupported,
       example: const VideoMediaKitExample(),
     ),
     _Package(
       title: 'Package "video_player"',
       enabled: (kIsWeb && _isWebEditingSupported) ||
-          Platform.isAndroid ||
-          Platform.isIOS ||
-          Platform.isMacOS,
+          (!kIsWeb &&
+              (Platform.isAndroid || Platform.isIOS || Platform.isMacOS)),
       example: const VideoPlayerExample(),
     ),
     _Package(
       title: 'Package "flick_video_player"',
       enabled: (kIsWeb && _isWebEditingSupported) ||
-          Platform.isAndroid ||
-          Platform.isIOS ||
-          Platform.isMacOS,
+          (!kIsWeb &&
+              (Platform.isAndroid || Platform.isIOS || Platform.isMacOS)),
       example: const FlickVideoPlayerExample(),
     ),
     _Package(
       title: 'Package "chewie"',
       enabled: (kIsWeb && _isWebEditingSupported) ||
-          Platform.isAndroid ||
-          Platform.isIOS ||
-          Platform.isMacOS,
+          (!kIsWeb &&
+              (Platform.isAndroid || Platform.isIOS || Platform.isMacOS)),
       example: const ChewiePlayerExample(),
     ),
   ];
@@ -71,28 +69,59 @@ class _VideoExampleState extends State<VideoExample>
         shrinkWrap: true,
         padding: const EdgeInsets.symmetric(vertical: 20),
         children: <Widget>[
-          const Padding(
-            padding: EdgeInsets.fromLTRB(16, 4, 16, 16),
+          const ParagraphInfoWidget(
+            margin: EdgeInsets.fromLTRB(16, 4, 16, 16),
+            color: Colors.red,
             child: Text(
-              'The video editor is still in development and cannot generate an '
-              'exported video yet. This is just a preview of how the video '
-              'editor will look for users who want to prepare for its '
-              'implementation.',
-              style: TextStyle(color: Colors.red, fontSize: 16),
+              'The video editor is still under development and does not yet '
+              'support video exporting. This is merely a preview to give users '
+              'an idea of what the editor will look like, allowing them to '
+              'prepare for its future implementation.',
+              style: TextStyle(
+                color: Colors.red,
+                fontSize: 16,
+                fontWeight: FontWeight.w500,
+              ),
             ),
           ),
-          const Padding(
-            padding: EdgeInsets.fromLTRB(16, 4, 16, 16),
+          const ParagraphInfoWidget(
+            margin: EdgeInsets.fromLTRB(16, 4, 16, 16),
             child: Text(
               'For a reduced bundle size and fewer dependencies, no video '
               'player package is included. However, the image editor supports '
               'easy integration with an external video player, allowing video '
-              'editing to be set up in just a few lines of code.\n\n'
+              'editing to be set up in just a few lines of code. Additional '
+              'required native code implementations are provided by my new '
+              'package, pro_video_editor.'
+              '\n\n'
               'Choose one of the packages below that best suits your needs. '
               'Be sure to review which platforms each package supports, as '
               'well as their pros and cons, before making a decision.',
             ),
           ),
+          if (kIsWeb && !_isWebEditingSupported)
+            const ParagraphInfoWidget(
+              margin: EdgeInsets.fromLTRB(16, 16, 16, 4),
+              color: Colors.red,
+              child: Text(
+                'The package currently doesn\'t support web editing. I '
+                'recommend trying it out on any Dart-native platform, such as '
+                'Android or iOS.',
+                style: TextStyle(
+                  color: Colors.red,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            )
+          else
+            const ParagraphInfoWidget(
+              margin: EdgeInsets.fromLTRB(16, 16, 16, 8),
+              color: Color.fromARGB(255, 54, 89, 244),
+              child: Text(
+                'Choose the video player package that best suits your needs:',
+              ),
+            ),
           ..._videoPackages.map((pkg) {
             return ListTile(
               enabled: pkg.enabled,

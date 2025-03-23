@@ -773,6 +773,7 @@ class PaintEditorState extends State<PaintEditor>
             children: [
               if (!widget.paintOnly)
                 TransformedContentGenerator(
+                  isVideoPlayer: videoController != null,
                   configs: configs,
                   transformConfigs:
                       initialTransformConfigs ?? TransformConfigs.empty(),

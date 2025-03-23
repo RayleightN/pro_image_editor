@@ -2329,6 +2329,7 @@ class CropRotateEditorState extends State<CropRotateEditor>
               createRectTween: (begin, end) =>
                   RectTween(begin: begin, end: end),
               child: TransformedContentGenerator(
+                isVideoPlayer: videoController != null,
                 transformConfigs: _fakeHeroTransformConfigs,
                 configs: configs,
                 child: FilteredWidget(
@@ -2372,6 +2373,7 @@ class CropRotateEditorState extends State<CropRotateEditor>
       width: w,
       height: h,
       child: TransformedContentGenerator(
+        isVideoPlayer: videoController != null,
         transformConfigs: transformC,
         configs: configs,
         child: FilteredWidget(
