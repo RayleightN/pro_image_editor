@@ -1,5 +1,12 @@
 # Changelog
 
+## 9.1.0
+- **FEAT**: Replaced the external packages [`emoji_picker_flutter`](https://pub.dev/packages/emoji_picker_flutter), [`universal_io`](https://pub.dev/packages/universal_io), and [`flutter_web_plugins`](https://api.flutter.dev/flutter/flutter_web_plugins) with lightweight internal implementations.  
+  The editor now only relies on official Dart and Flutter packages, reducing dependencies and improving maintainability.
+- **FEAT**: Added a new preview-only constructor for video editing: `ProImageEditor.video`.  
+  This feature allows previewing video edits but does not yet support video export.  
+  Example usage can be found [here](https://github.com/hm21/pro_image_editor/tree/stable/example/lib/features/video_examples).
+
 ## 9.0.7
 - **FIX**(import): Resolve state restoration issue causing layer shift on cropped images. Resolves [#292](https://github.com/hm21/pro_image_editor/issues/292).
 
