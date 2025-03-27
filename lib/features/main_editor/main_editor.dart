@@ -1672,6 +1672,20 @@ class ProImageEditorState extends State<ProImageEditor>
     mainEditorCallbacks?.handleUpdateUI();
   }
 
+  /// add custom layer to the editor.
+  void onAddCustomLayer(WidgetLayer layer) async {
+    setState(() => layerInteractionManager.selectedLayerId = '');
+    _checkInteractiveViewer();
+    ServicesBinding.instance.keyboard.removeHandler(_onKeyEvent);
+    ServicesBinding.instance.keyboard.addHandler(_onKeyEvent);
+    if (!mounted) return;
+
+    addLayer(layer);
+
+    setState(() {});
+    mainEditorCallbacks?.handleUpdateUI();
+  }
+
   /// Moves a layer in the list to a new position.
   ///
   /// - `oldIndex` is the current index of the layer.
