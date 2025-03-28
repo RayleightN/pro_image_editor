@@ -1,10 +1,11 @@
 import 'dart:async';
 import 'dart:math';
-import 'dart:ui' as ui show Image;
+import 'dart:ui' as ui;
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:pro_image_editor/core/models/complete_parameters.dart';
 
 import '/core/mixins/converted_configs.dart';
 import '/core/mixins/editor_callbacks_mixin.dart';
@@ -313,8 +314,6 @@ class ProImageEditor extends StatefulWidget
     );
   }
 
-  /// 🚧 The Video Editor is under development and not ready for use.
-  ///
   /// This constructor creates a `ProImageEditor` widget configured to edit an
   /// video.
   ///
@@ -323,7 +322,6 @@ class ProImageEditor extends StatefulWidget
   /// Example usage:
   ///
   /// [Example with media_kit](https://github.com/hm21/pro_image_editor/blob/stable/example/lib/features/video_examples/pages/video_media_kit_example.dart)
-  @Deprecated('The Video Editor is under development and not ready for use.')
   factory ProImageEditor.video(
     ProVideoController videoController, {
     Key? key,
@@ -441,6 +439,8 @@ class ProImageEditorState extends State<ProImageEditor>
   /// Indicates whether PopScope is disabled.
   bool isPopScopeDisabled = false;
 
+  bool _isVideoPlayerReady = true;
+
   /// Getter for the active layer currently being edited.
   Layer? get _activeLayer =>
       activeLayers.length > selectedLayerIndex && selectedLayerIndex >= 0
@@ -480,15 +480,10 @@ class ProImageEditorState extends State<ProImageEditor>
   @override
   void initState() {
     super.initState();
-
-    widget.videoController?.initialize(
-      configsFunction: () => configs.videoEditor,
-      callbacksFunction: () =>
-          callbacks.videoEditorCallbacks ?? VideoEditorCallbacks(),
-    );
+    _initializeVideoEditor();
 
     _rebuildController = StreamController.broadcast();
-    _controllers = MainEditorControllers(configs, callbacks);
+    _controllers = MainEditorControllers(configs, callbacks, _isVideoEditor);
     _desktopInteractionManager = DesktopInteractionManager(
       configs: configs,
       callbacks: callbacks,
@@ -788,6 +783,45 @@ class ProImageEditorState extends State<ProImageEditor>
     _tempLayer = null;
   }
 
+  void _initializeVideoEditor() async {
+    if (!_isVideoEditor) return;
+
+    _isVideoPlayerReady = false;
+    Future<Uint8List> createTransparentImage(
+        double width, double height) async {
+      final recorder = ui.PictureRecorder();
+      final canvas = Canvas(recorder, Rect.fromLTWH(0, 0, width, height));
+      final paint = Paint()..color = const ui.Color.fromARGB(0, 0, 0, 0);
+      canvas.drawRect(Rect.fromLTWH(0.0, 0.0, width, height), paint);
+
+      final picture = recorder.endRecording();
+      final img = await picture.toImage(width.toInt(), height.toInt());
+      final pngBytes = await img.toByteData(format: ui.ImageByteFormat.png);
+
+      return pngBytes!.buffer.asUint8List();
+    }
+
+    widget.videoController!.initialize(
+      configsFunction: () => configs.videoEditor,
+      callbacksFunction: () =>
+          callbacks.videoEditorCallbacks ?? VideoEditorCallbacks(),
+    );
+
+    final resolution = widget.videoController!.initialResolution;
+    editorImage = EditorImage(
+      byteArray: await createTransparentImage(
+        resolution.width,
+        resolution.height,
+      ),
+    );
+    _isVideoPlayerReady = true;
+
+    if (!mounted) return;
+
+    setState(() {});
+    await decodeImage();
+  }
+
   void _initializeWithTransformations() {
     var transformSetup = mainEditorConfigs.transformSetup!;
 
@@ -820,7 +854,7 @@ class ProImageEditorState extends State<ProImageEditor>
     TransformConfigs? transformConfigs,
     ImageInfos? imageInfos,
   ]) async {
-    if (_isVideoEditor) {
+    if (!_isVideoPlayerReady && _isVideoEditor) {
       var initSize = widget.videoController!.initialResolution;
       _imageInfos = ImageInfos(
         rawSize: initSize,
@@ -850,6 +884,7 @@ class ProImageEditorState extends State<ProImageEditor>
         message: i18n.importStateHistoryMsg,
       );
     }
+
     _imageInfos = imageInfos ??
         await decodeImageInfos(
           bytes: await editorImage!.safeByteArray(context),
@@ -1816,6 +1851,33 @@ class ProImageEditorState extends State<ProImageEditor>
       } else {
         Uint8List? bytes = await captureEditorImage();
         await onImageEditingComplete?.call(bytes);
+
+        final transform = stateManager.transformConfigs;
+        final isTransformed = transform.isNotEmpty;
+
+        Size originalImageSize = _imageInfos!.rawSize;
+        Size outputSize = transform.getCropSize(originalImageSize);
+        Offset outputOffset = transform.getCropStartOffset(originalImageSize);
+
+        await onCompleteWithParameters?.call(
+          CompleteParameters(
+            blur: stateManager.activeBlur,
+            colorFilters: [
+              ...stateManager.activeFilters,
+              ...stateManager.activeTuneAdjustments.map((item) => item.matrix),
+            ],
+            startTime: widget.videoController?.startTime,
+            endTime: widget.videoController?.endTime,
+            cropWidth: isTransformed ? outputSize.width.round() : null,
+            cropHeight: isTransformed ? outputSize.height.round() : null,
+            cropX: isTransformed ? outputOffset.dx.round() : null,
+            cropY: isTransformed ? outputOffset.dy.round() : null,
+            flipX: transform.is90DegRotated ? transform.flipY : transform.flipX,
+            flipY: transform.is90DegRotated ? transform.flipX : transform.flipY,
+            rotateTurns: transform.angleToTurns(),
+            image: bytes,
+          ),
+        );
       }
 
       LoadingDialog.instance.hide();
@@ -1850,8 +1912,10 @@ class ProImageEditorState extends State<ProImageEditor>
     if (!mounted) return Uint8List.fromList([]);
 
     bool hasChanges = stateManager.canUndo;
-    bool useOriginalImage =
-        !hasChanges && imageGenerationConfigs.enableUseOriginalBytes;
+    bool useOriginalImage = !_isVideoEditor &&
+        !hasChanges &&
+        imageGenerationConfigs.enableUseOriginalBytes;
+
     if (!hasChanges && !imageGenerationConfigs.enableUseOriginalBytes) {
       addHistory();
     }
@@ -2168,42 +2232,47 @@ class ProImageEditorState extends State<ProImageEditor>
   Widget _buildBody() {
     return LayoutBuilder(builder: (context, constraints) {
       sizesManager.bodySize = constraints.biggest;
-      return Listener(
-        behavior: HitTestBehavior.translucent,
-        onPointerSignal: isDesktop && _activeLayer != null
-            ? (event) {
-                if (_activeLayer == null) return;
-                _desktopInteractionManager.mouseScroll(
-                  event,
-                  activeLayer: _activeLayer!,
-                  selectedLayerIndex: selectedLayerIndex,
-                );
-              }
-            : null,
-        child: GestureDetector(
-          behavior: HitTestBehavior.translucent,
-          onTap: () {
-            if (layerInteractionManager.selectedLayerId.isNotEmpty) {
-              layerInteractionManager.selectedLayerId = '';
-              _checkInteractiveViewer();
-              setState(() {});
-            }
-            widget.videoController?.togglePlayState();
-            mainEditorCallbacks?.onTap?.call();
-          },
-          onDoubleTap: mainEditorCallbacks?.onDoubleTap,
-          onLongPress: mainEditorCallbacks?.onLongPress,
-          onScaleStart: _onScaleStart,
-          onScaleUpdate: _onScaleUpdate,
-          onScaleEnd: _onScaleEnd,
-          child: mainEditorConfigs.widgets.wrapBody?.call(
-                this,
-                _rebuildController.stream,
-                _buildInteractiveContent(),
-              ) ??
-              _buildInteractiveContent(),
-        ),
-      );
+      return !_isVideoPlayerReady
+          ? _buildSetupSpinner()
+          : AnimatedSwitcher(
+              duration: const Duration(milliseconds: 200),
+              child: Listener(
+                behavior: HitTestBehavior.translucent,
+                onPointerSignal: isDesktop && _activeLayer != null
+                    ? (event) {
+                        if (_activeLayer == null) return;
+                        _desktopInteractionManager.mouseScroll(
+                          event,
+                          activeLayer: _activeLayer!,
+                          selectedLayerIndex: selectedLayerIndex,
+                        );
+                      }
+                    : null,
+                child: GestureDetector(
+                  behavior: HitTestBehavior.translucent,
+                  onTap: () {
+                    if (layerInteractionManager.selectedLayerId.isNotEmpty) {
+                      layerInteractionManager.selectedLayerId = '';
+                      _checkInteractiveViewer();
+                      setState(() {});
+                    }
+                    widget.videoController?.togglePlayState();
+                    mainEditorCallbacks?.onTap?.call();
+                  },
+                  onDoubleTap: mainEditorCallbacks?.onDoubleTap,
+                  onLongPress: mainEditorCallbacks?.onLongPress,
+                  onScaleStart: _onScaleStart,
+                  onScaleUpdate: _onScaleUpdate,
+                  onScaleEnd: _onScaleEnd,
+                  child: mainEditorConfigs.widgets.wrapBody?.call(
+                        this,
+                        _rebuildController.stream,
+                        _buildInteractiveContent(),
+                      ) ??
+                      _buildInteractiveContent(),
+                ),
+              ),
+            );
     });
   }
 
@@ -2302,9 +2371,23 @@ class ProImageEditorState extends State<ProImageEditor>
     );
   }
 
+  Widget _buildSetupSpinner() {
+    return Center(
+      child: SizedBox(
+        width: 48,
+        height: 48,
+        child: FittedBox(
+          child: PlatformCircularProgressIndicator(configs: configs),
+        ),
+      ),
+    );
+  }
+
   Widget _buildImage() {
     return MainEditorBackgroundImage(
-      backgroundImageColorFilterKey: _backgroundImageColorFilterKey,
+      backgroundImageColorFilterKey:
+          _isVideoEditor ? GlobalKey() : _backgroundImageColorFilterKey,
+      heroTag: _isVideoEditor ? 'image-${configs.heroTag}' : configs.heroTag,
       configs: configs,
       editorImage: editorImage!,
       isInitialized: _isInitialized,
