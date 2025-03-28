@@ -111,12 +111,11 @@ mixin VideoEditorMixin<T extends StatefulWidget> on State<T> {
     var exportModel = ExportVideoModel(
       videoBytes: videoBytes,
       imageBytes: parameters.image,
-      videoDuration: videoInformation.duration,
-      devicePixelRatio: devicePixelRatio,
       blur: parameters.blur,
       colorFilters: parameters.colorFilters,
       startTime: parameters.startTime,
       endTime: parameters.endTime,
+      videoDuration: videoInformation.duration,
       transform: ExportTransform(
         width: parameters.cropWidth,
         height: parameters.cropHeight,
@@ -127,10 +126,25 @@ mixin VideoEditorMixin<T extends StatefulWidget> on State<T> {
         flipY: parameters.flipY,
       ),
 
+      ///
+      devicePixelRatio: devicePixelRatio,
+      enableAudio: proVideoController?.isAudioEnabled ?? true,
+
       /// Generation configurations
       outputFormat: outputFormat,
       outputQuality: OutputQuality.mediumHigh,
       encodingPreset: EncodingPreset.ultrafast,
+
+      /// Other
+      /// customFilter: '',
+      /// encoding: const VideoEncoding(
+      ///   aviEncodingConfig: AviEncodingConfig(),
+      ///   gifEncodingConfig: GifEncodingConfig(),
+      ///   mkvEncodingConfig: MkvEncodingConfig(),
+      ///   movEncodingConfig: MovEncodingConfig(),
+      ///   mp4EncodingConfig: Mp4EncodingConfig(),
+      ///   webMEncodingConfig: WebMEncodingConfig(),
+      /// ),
     );
     exportedVideo = await VideoUtilsService.instance.exportVideo(exportModel);
     videoGenerationTime = stopwatch.elapsed;

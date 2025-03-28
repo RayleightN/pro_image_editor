@@ -56,6 +56,13 @@ class ProVideoController {
     TrimDurationSpan(start: Duration.zero, end: videoDuration),
   );
 
+  /// Indicates whether audio is currently enabled for the video.
+  ///
+  /// This returns `true` if the video is not muted, based on the value
+  /// of [isMutedNotifier]. It's useful for checking whether audio should
+  /// be included during playback or export.
+  bool get isAudioEnabled => !isMutedNotifier.value;
+
   /// The start time of the trimmed video segment.
   ///
   /// Retrieved from the [trimDurationSpanNotifier].
