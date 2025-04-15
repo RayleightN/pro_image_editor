@@ -26,16 +26,17 @@ class _VideoExampleState extends State<VideoExample>
 
   late final _videoPackages = [
     _Package(
-      title: 'Package "media_kit"',
-      enabled: !kIsWeb || _isWebEditingSupported,
-      example: const VideoMediaKitExample(),
-    ),
-    _Package(
       title: 'Package "video_player"',
+      subTitle: 'Recommended for Android and iOS',
       enabled: (kIsWeb && _isWebEditingSupported) ||
           (!kIsWeb &&
               (Platform.isAndroid || Platform.isIOS || Platform.isMacOS)),
       example: const VideoPlayerExample(),
+    ),
+    _Package(
+      title: 'Package "media_kit"',
+      enabled: !kIsWeb || _isWebEditingSupported,
+      example: const VideoMediaKitExample(),
     ),
     _Package(
       title: 'Package "flick_video_player"',
@@ -73,10 +74,9 @@ class _VideoExampleState extends State<VideoExample>
             margin: EdgeInsets.fromLTRB(16, 4, 16, 16),
             color: Colors.red,
             child: Text(
-              'The video editor is still under development and does not yet '
-              'support video exporting. This is merely a preview to give users '
-              'an idea of what the editor will look like, allowing them to '
-              'prepare for its future implementation.',
+              'The package used to process edited videos is still under '
+              'development and currently supports only Android, iOS, and '
+              'macOS.',
               style: TextStyle(
                 color: Colors.red,
                 fontSize: 16,
@@ -104,51 +104,56 @@ class _VideoExampleState extends State<VideoExample>
               margin: EdgeInsets.fromLTRB(16, 16, 16, 4),
               color: Colors.red,
               child: Text(
-                'The package currently doesn\'t support web editing. I '
-                'recommend trying it out on any Dart-native platform, such as '
+                'The package does not support video editing on the web. You '
+                'can try it on any Dart-native platform, such as '
                 'Android or iOS.',
                 style: TextStyle(
                   color: Colors.red,
-                  fontSize: 16,
+                  fontSize: 18,
                   fontWeight: FontWeight.w500,
                 ),
               ),
             )
           else
-            const ParagraphInfoWidget(
-              margin: EdgeInsets.fromLTRB(16, 16, 16, 8),
-              color: Color.fromARGB(255, 54, 89, 244),
-              child: Text(
-                'Choose the video player package that best suits your needs:',
-              ),
-            ),
-          ..._videoPackages.map((pkg) {
-            return ListTile(
-              enabled: pkg.enabled,
-              leading: const Icon(Icons.movie),
-              title: Text(pkg.title),
-              subtitle: pkg.enabled ? null : _buildNotSupportedMsg(),
-              trailing: const Icon(Icons.chevron_right),
-              onTap: pkg.enabled ? () => _openExample(pkg.example) : null,
-            );
-          }),
+            ..._videoPackages.map((pkg) {
+              return ListTile(
+                enabled: pkg.enabled,
+                leading: const Icon(Icons.movie),
+                title: Text(pkg.title),
+                subtitle: pkg.enabled
+                    ? (pkg.subTitle.isNotEmpty ? Text(pkg.subTitle) : null)
+                    : _buildNotSupportedMsg(pkg.subTitle),
+                trailing: const Icon(Icons.chevron_right),
+                onTap: pkg.enabled ? () => _openExample(pkg.example) : null,
+              );
+            }),
         ],
       ),
     );
   }
 
-  Widget _buildNotSupportedMsg() {
-    return const Text('This package is not supported on that platform.');
+  Widget _buildNotSupportedMsg(String subTitle) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisAlignment: MainAxisAlignment.start,
+      spacing: 3,
+      children: [
+        Text(subTitle),
+        const Text('This package is not supported on that platform.'),
+      ],
+    );
   }
 }
 
 class _Package {
   _Package({
     required this.title,
+    this.subTitle = '',
     required this.enabled,
     required this.example,
   });
   final String title;
+  final String subTitle;
   final bool enabled;
   final Widget example;
 }

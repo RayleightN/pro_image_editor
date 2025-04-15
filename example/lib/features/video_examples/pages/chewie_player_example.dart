@@ -1,4 +1,5 @@
 import 'package:chewie/chewie.dart';
+import 'package:example/shared/widgets/video_progress_alert.dart';
 import 'package:flutter/material.dart';
 import 'package:pro_image_editor/pro_image_editor.dart';
 import 'package:pro_video_editor/pro_video_editor.dart';
@@ -38,10 +39,10 @@ class _ChewiePlayerExampleState extends State<ChewiePlayerExample>
   }
 
   void _initializePlayer() async {
-    EditorVideo video = EditorVideo(assetPath: kVideoEditorExampleAssetPath);
+    video = EditorVideo(assetPath: kVideoEditorExampleAssetPath);
 
-    await setVideoInformations(video);
-    await generateThumbnails(video);
+    await setVideoInformations();
+    await generateThumbnails();
     if (!mounted) return;
 
     _videoPlayerController =
@@ -117,11 +118,11 @@ class _ChewiePlayerExampleState extends State<ChewiePlayerExample>
       duration: const Duration(milliseconds: 220),
       child: proVideoController == null
           ? const VideoInitializingWidget()
-          // TODO: remove deprecated warning
-          // ignore: deprecated_member_use
           : ProImageEditor.video(
               proVideoController!,
               callbacks: ProImageEditorCallbacks(
+                onCompleteWithParameters: generateVideo,
+                onCloseEditor: onCloseEditor,
                 videoEditorCallbacks: VideoEditorCallbacks(
                   onPause: _chewieController.pause,
                   onPlay: _chewieController.play,
@@ -137,6 +138,12 @@ class _ChewiePlayerExampleState extends State<ChewiePlayerExample>
                 ),
               ),
               configs: ProImageEditorConfigs(
+                dialogConfigs: DialogConfigs(
+                  widgets: DialogWidgets(
+                    loadingDialog: (message, configs) =>
+                        const VideoProgressAlert(),
+                  ),
+                ),
                 mainEditor: MainEditorConfigs(
                   widgets: MainEditorWidgets(
                     removeLayerArea: (removeAreaKey, editor, rebuildStream) =>
@@ -146,6 +153,11 @@ class _ChewiePlayerExampleState extends State<ChewiePlayerExample>
                       rebuildStream: rebuildStream,
                     ),
                   ),
+                ),
+                paintEditor: const PaintEditorConfigs(
+                  /// Blur and pixelate are not supported.
+                  enableModePixelate: false,
+                  enableModeBlur: false,
                 ),
                 videoEditor: videoConfigs.copyWith(
                   playTimeSmoothingDuration: const Duration(milliseconds: 600),

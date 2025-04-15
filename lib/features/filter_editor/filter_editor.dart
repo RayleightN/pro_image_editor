@@ -133,8 +133,6 @@ class FilterEditor extends StatefulWidget
     );
   }
 
-  /// 🚧 The Video Editor is under development and not ready for use.
-  ///
   /// Constructs a `FilterEditor` widget with an video player.
   factory FilterEditor.video(
     ProVideoController videoController, {
@@ -204,6 +202,12 @@ class FilterEditorState extends State<FilterEditor>
     doneEditing(
       editorImage: widget.editorImage,
       returnValue: _getActiveFilters(),
+      blur: appliedBlurFactor,
+      colorFilters: [
+        ..._getActiveFilters(),
+        ...appliedTuneAdjustments.map((item) => item.matrix),
+      ],
+      transform: initialTransformConfigs,
     );
     filterEditorCallbacks?.handleDone();
   }
@@ -293,40 +297,16 @@ class FilterEditorState extends State<FilterEditor>
         alignment: Alignment.center,
         fit: StackFit.expand,
         children: [
+          if (initConfigs.convertToUint8List && isVideoEditor)
+            _buildBackground(),
           ContentRecorder(
             controller: screenshotCtrl,
             child: Stack(
               alignment: Alignment.center,
               fit: StackFit.expand,
               children: [
-                Hero(
-                  tag: heroTag,
-                  createRectTween: (begin, end) =>
-                      RectTween(begin: begin, end: end),
-                  child: TransformedContentGenerator(
-                    isVideoPlayer: videoController != null,
-                    configs: configs,
-                    transformConfigs:
-                        initialTransformConfigs ?? TransformConfigs.empty(),
-                    child: StreamBuilder(
-                        stream: _uiFilterStream.stream,
-                        builder: (context, snapshot) {
-                          return FilteredWidget(
-                            width: getMinimumSize(mainImageSize, editorBodySize)
-                                .width,
-                            height:
-                                getMinimumSize(mainImageSize, editorBodySize)
-                                    .height,
-                            configs: configs,
-                            image: editorImage,
-                            videoPlayer: videoController?.videoPlayer,
-                            filters: _getActiveFilters(),
-                            tuneAdjustments: appliedTuneAdjustments,
-                            blurFactor: appliedBlurFactor,
-                          );
-                        }),
-                  ),
-                ),
+                if (!initConfigs.convertToUint8List || !isVideoEditor)
+                  _buildBackground(),
                 if (filterEditorConfigs.showLayers && layers != null)
                   LayerStack(
                     transformHelper: TransformHelper(
@@ -354,6 +334,32 @@ class FilterEditorState extends State<FilterEditor>
         ],
       );
     });
+  }
+
+  Widget _buildBackground() {
+    return Hero(
+      tag: heroTag,
+      createRectTween: (begin, end) => RectTween(begin: begin, end: end),
+      child: TransformedContentGenerator(
+        isVideoPlayer: videoController != null,
+        configs: configs,
+        transformConfigs: initialTransformConfigs ?? TransformConfigs.empty(),
+        child: StreamBuilder(
+            stream: _uiFilterStream.stream,
+            builder: (context, snapshot) {
+              return FilteredWidget(
+                width: getMinimumSize(mainImageSize, editorBodySize).width,
+                height: getMinimumSize(mainImageSize, editorBodySize).height,
+                configs: configs,
+                image: editorImage,
+                videoPlayer: videoController?.videoPlayer,
+                filters: _getActiveFilters(),
+                tuneAdjustments: appliedTuneAdjustments,
+                blurFactor: appliedBlurFactor,
+              );
+            }),
+      ),
+    );
   }
 
   /// Builds the bottom navigation bar with filter options.
