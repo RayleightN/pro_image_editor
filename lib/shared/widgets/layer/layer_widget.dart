@@ -1,6 +1,5 @@
 // Dart imports:
 import 'dart:math';
-
 // Flutter imports:
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
@@ -42,6 +41,7 @@ class LayerWidget extends StatefulWidget with SimpleConfigsAccess {
     this.selected = false,
     this.isInteractive = false,
     this.callbacks = const ProImageEditorCallbacks(),
+    this.onUnlockLayer,
   });
   @override
   final ProImageEditorConfigs configs;
@@ -125,6 +125,9 @@ class LayerWidget extends StatefulWidget with SimpleConfigsAccess {
 
   /// Indicates whether the layer is interactive.
   final bool isInteractive;
+
+  /// Callback for unlocking the layer.
+  final VoidCallback? onUnlockLayer;
 
   @override
   createState() => _LayerWidgetState();
@@ -304,6 +307,9 @@ class _LayerWidgetState extends State<LayerWidget>
       },
       onScaleRotateUp: widget.onScaleRotateUp,
       onRemoveLayer: widget.onRemoveTap,
+      onUnLockLayer: () {
+        widget.onUnlockLayer?.call();
+      },
       child: _buildCursor(
         child: ValueListenableBuilder(
             valueListenable: _lastHitState,

@@ -104,6 +104,15 @@ class LayerInteraction {
     enableSelection = enableInteraction;
   }
 
+  /// lock
+  void lock() {
+    enableEdit = false;
+    enableMove = false;
+    enableScale = false;
+    enableRotate = false;
+    enableSelection = true;
+  }
+
   /// Creates a copy of this [LayerInteraction] with optional overrides.
   ///
   /// - [enableMove]: If provided, overrides the current `enableMove` setting.
@@ -195,5 +204,14 @@ class LayerInteraction {
         enableRotate.hashCode ^
         enableSelection.hashCode ^
         enableEdit.hashCode;
+  }
+
+  /// flag to check if all interactions are disabled
+  bool get isLocked {
+    return !enableMove &&
+        !enableScale &&
+        !enableRotate &&
+        !enableEdit &&
+        enableSelection;
   }
 }

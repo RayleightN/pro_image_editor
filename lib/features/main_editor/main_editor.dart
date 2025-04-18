@@ -2101,6 +2101,23 @@ class ProImageEditorState extends State<ProImageEditor>
     );
   }
 
+  /// unlock selected layer.
+  void unLockLayer(Layer? layer) {
+    if (layer == null) return;
+    stateManager.unLockSelectedLayerInteraction(
+      layer: layer,
+    );
+  }
+
+  /// on lock a layer.
+  void lockLayer(Layer? layer) {
+    if (layer == null) return;
+    stateManager.lockSelectedLayerInteraction(
+      layer: layer,
+    );
+    clearLayerSelection();
+  }
+
   /// Clears the currently selected layer by:
   /// - Resetting the selected layer index to -1
   /// - Clearing the selected layer ID in the [layerInteractionManager]
@@ -2357,6 +2374,7 @@ class ProImageEditorState extends State<ProImageEditor>
       onContextMenuToggled: (isOpen) {
         _isContextMenuOpen = isOpen;
       },
+      stateManager: stateManager,
     );
   }
 
