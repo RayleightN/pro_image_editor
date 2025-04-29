@@ -177,16 +177,16 @@ class _LayerInteractionHelperWidgetState
     List<LayerInteractionItem> children =
         layerInteraction.widgets.children ?? _buildDefaultInteractions();
 
-    // final interactions = LayerItemInteractions(
-    //   edit: widget.onEditLayer ?? () {},
-    //   remove: widget.onRemoveLayer ?? () {},
-    //   scaleRotateDown: (event) {
-    //     widget.onScaleRotateDown?.call(event);
-    //   },
-    //   scaleRotateUp: (event) {
-    //     widget.onScaleRotateUp?.call(event);
-    //   },
-    // );
+    final interactions = LayerItemInteractions(
+      edit: widget.onEditLayer ?? () {},
+      remove: widget.onRemoveLayer ?? () {},
+      scaleRotateDown: (event) {
+        widget.onScaleRotateDown?.call(event);
+      },
+      scaleRotateUp: (event) {
+        widget.onScaleRotateUp?.call(event);
+      },
+    );
     return TooltipVisibility(
       visible: layerInteraction.style.showTooltips,
       child: DeferPointer(
@@ -198,11 +198,11 @@ class _LayerInteractionHelperWidgetState
             layerInteraction.widgets.border
                     ?.call(widget.child, widget.layerData) ??
                 Container(
-                  // margin: const EdgeInsets.all(48),
-                  margin: EdgeInsets.all(
-                    layerInteraction.style.buttonRadius +
-                        layerInteraction.style.strokeWidth * 2,
-                  ),
+                  margin: const EdgeInsets.all(48),
+                  // margin: EdgeInsets.all(
+                  //   layerInteraction.style.buttonRadius +
+                  //       layerInteraction.style.strokeWidth * 2,
+                  // ),
                   child: CustomPaint(
                     foregroundPainter: LayerInteractionBorderPainter(
                       style: layerInteraction.style,
@@ -210,106 +210,125 @@ class _LayerInteractionHelperWidgetState
                     child: widget.child,
                   ),
                 ),
-            // Positioned(
-            //   top: 0,
-            //   child: Transform.rotate(
-            //     angle: -widget.layerData.rotation,
-            //     child: Container(
-            //       padding: const EdgeInsets.symmetric(horizontal: 12),
-            //       height: 40,
-            //       decoration: BoxDecoration(
-            //         borderRadius: BorderRadius.circular(20),
-            //         color: Colors.white,
-            //         border: Border.all(
-            //           color: const Color(0xFF828282).withValues(alpha: 0.15),
-            //         ),
-            //         boxShadow: [
-            //           BoxShadow(
-            //             color: const Color(0xFF828282).withValues(alpha: 0.15),
-            //             blurRadius: 6,
-            //             offset: const Offset(0, 1),
-            //           ),
-            //           BoxShadow(
-            //             color: const Color(0xFF828282).withValues(alpha: 0.15),
-            //             blurRadius: 7.5,
-            //             offset: const Offset(0, 2),
-            //           ),
-            //         ],
-            //       ),
-            //       child: Row(
-            //         children: [
-            //           ReactiveWidget(
-            //             stream: _rebuildStream.stream,
-            //             builder: (_) => LayerInteractionButton(
-            //               rotation: 0,
-            //               onTap: interactions.remove,
-            //               buttonRadius: layerInteraction.style.buttonRadius,
-            //               cursor: layerInteraction.style.removeCursor,
-            //               icon: Icons.delete_outline,
-            //               tooltip: i18n.layerInteraction.remove,
-            //               color: layerInteraction.style.buttonRemoveColor,
-            //               background:
-            //                   layerInteraction.style.buttonRemoveBackground,
-            //             ),
-            //           ),
-            //           const SizedBox(
-            //             width: 8,
-            //           ),
-            //           ReactiveWidget(
-            //               stream: _rebuildStream.stream,
-            //               builder: (_) => LayerInteractionButton(
-            //                     rotation: 0,
-            //                     onTap: interactions.edit,
-            //                     buttonRadius:
-            //                         layerInteraction.style.buttonRadius,
-            //                     cursor: layerInteraction.style.editCursor,
-            //                     icon: Icons.more_horiz,
-            //                     tooltip: i18n.layerInteraction.edit,
-            //                     color:
-            //                         layerInteraction.style.buttonEditTextColor,
-            //                     background: layerInteraction
-            //                         .style.buttonEditTextBackground,
-            //                   )),
-            //         ],
-            //       ),
-            //     ),
-            //   ),
-            // ),
-            // ReactiveWidget(
-            //   stream: _rebuildStream.stream,
-            //   builder: (_) => Positioned(
-            //     bottom: 8,
-            //     child: LayerInteractionButton(
-            //       rotation: -widget.layerData.rotation,
-            //       onScaleRotateDown: interactions.scaleRotateDown,
-            //       onScaleRotateUp: interactions.scaleRotateUp,
-            //       buttonRadius: layerInteraction.style.buttonRadius,
-            //       cursor: layerInteraction.style.rotateScaleCursor,
-            //       icon: Icons.sync,
-            //       tooltip: i18n.layerInteraction.rotateScale,
-            //       color: layerInteraction.style.buttonScaleRotateColor,
-            //       background:
-            //           layerInteraction.style.buttonScaleRotateBackground,
-            //     ),
-            //   ),
-            // ),
-            ...children.map(
-              (item) => item.call(
-                _rebuildStream.stream,
-                widget.layerData,
-                LayerItemInteractions(
-                  edit: widget.onEditLayer ?? () {},
-                  remove: widget.onRemoveLayer ?? () {},
-                  scaleRotateDown: (event) {
-                    widget.onScaleRotateDown?.call(event);
-                  },
-                  scaleRotateUp: (event) {
-                    widget.onScaleRotateUp?.call(event);
-                  },
+            Positioned(
+              top: 0,
+              child: Transform.rotate(
+                angle: 0,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                  height: 40,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(20),
+                    color: Colors.white,
+                    border: Border.all(
+                      color: const Color(0xFF828282).withValues(alpha: 0.15),
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: const Color(0xFF828282).withValues(alpha: 0.15),
+                        blurRadius: 6,
+                        offset: const Offset(0, 1),
+                      ),
+                      BoxShadow(
+                        color: const Color(0xFF828282).withValues(alpha: 0.15),
+                        blurRadius: 7.5,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: Row(
+                    children: [
+                      if (widget.layerData.interaction.isLocked)
+                        _buildUnlock()
+                      else
+                        ...children.map(
+                          (item) => item.call(
+                            _rebuildStream.stream,
+                            widget.layerData,
+                            LayerItemInteractions(
+                              edit: widget.onEditLayer ?? () {},
+                              remove: widget.onRemoveLayer ?? () {},
+                              scaleRotateDown: (event) {
+                                widget.onScaleRotateDown?.call(event);
+                              },
+                              scaleRotateUp: (event) {
+                                widget.onScaleRotateUp?.call(event);
+                              },
+                            ),
+                          ),
+                        ),
+                      // ReactiveWidget(
+                      //   stream: _rebuildStream.stream,
+                      //   builder: (_) => LayerInteractionButton(
+                      //     rotation: 0,
+                      //     onTap: interactions.remove,
+                      //     buttonRadius: layerInteraction.style.buttonRadius,
+                      //     cursor: layerInteraction.style.removeCursor,
+                      //     icon: Icons.delete_outline,
+                      //     tooltip: i18n.layerInteraction.remove,
+                      //     color: layerInteraction.style.buttonRemoveColor,
+                      //     background:
+                      //         layerInteraction.style.buttonRemoveBackground,
+                      //   ),
+                      // ),
+                      // const SizedBox(
+                      //   width: 8,
+                      // ),
+                      // ReactiveWidget(
+                      //     stream: _rebuildStream.stream,
+                      //     builder: (_) => LayerInteractionButton(
+                      //           rotation: 0,
+                      //           onTap: interactions.edit,
+                      //           buttonRadius:
+                      //               layerInteraction.style.buttonRadius,
+                      //           cursor: layerInteraction.style.editCursor,
+                      //           icon: Icons.more_horiz,
+                      //           tooltip: i18n.layerInteraction.edit,
+                      //           color:
+                      //               layerInteraction.style.buttonEditTextColor,
+                      //           background: layerInteraction
+                      //               .style.buttonEditTextBackground,
+                      //         )),
+                    ],
+                  ),
                 ),
               ),
             ),
-            if (widget.layerData.interaction.isLocked) _buildUnlock(),
+            ReactiveWidget(
+              stream: _rebuildStream.stream,
+              builder: (_) => Positioned(
+                bottom: 8,
+                child: LayerInteractionButton(
+                  rotation: -widget.layerData.rotation,
+                  onScaleRotateDown: interactions.scaleRotateDown,
+                  onScaleRotateUp: interactions.scaleRotateUp,
+                  buttonRadius: layerInteraction.style.buttonRadius,
+                  cursor: layerInteraction.style.rotateScaleCursor,
+                  icon: Icons.sync,
+                  tooltip: i18n.layerInteraction.rotateScale,
+                  color: layerInteraction.style.buttonScaleRotateColor,
+                  background:
+                      layerInteraction.style.buttonScaleRotateBackground,
+                ),
+              ),
+            ),
+            // ...children.map(
+            //   (item) => item.call(
+            //     _rebuildStream.stream,
+            //     widget.layerData,
+            //     LayerItemInteractions(
+            //       edit: widget.onEditLayer ?? () {},
+            //       remove: widget.onRemoveLayer ?? () {},
+            //       scaleRotateDown: (event) {
+            //         widget.onScaleRotateDown?.call(event);
+            //       },
+            //       scaleRotateUp: (event) {
+            //         widget.onScaleRotateUp?.call(event);
+            //       },
+            //     ),
+            //   ),
+            // ),
+            // if (widget.layerData.interaction.isLocked) _buildUnlock(),
           ],
         ),
       ),
@@ -343,18 +362,15 @@ class _LayerInteractionHelperWidgetState
   }
 
   Widget _buildUnlock() {
-    return Positioned(
-      top: 0,
-      child: LayerInteractionButton(
-        rotation: -widget.layerData.rotation,
-        onTap: widget.onUnLockLayer,
-        buttonRadius: layerInteraction.style.buttonRadius,
-        cursor: layerInteraction.style.removeCursor,
-        icon: Icons.lock_open,
-        tooltip: i18n.layerInteraction.remove,
-        color: const Color(0xff1a6dff),
-        background: Colors.white,
-      ),
+    return LayerInteractionButton(
+      rotation: -widget.layerData.rotation,
+      onTap: widget.onUnLockLayer,
+      buttonRadius: layerInteraction.style.buttonRadius,
+      cursor: layerInteraction.style.removeCursor,
+      icon: Icons.lock_open,
+      tooltip: i18n.layerInteraction.remove,
+      color: const Color(0xff1a6dff),
+      background: Colors.white,
     );
   }
 
