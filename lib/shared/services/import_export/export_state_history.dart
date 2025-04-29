@@ -229,9 +229,9 @@ class ExportStateHistory {
     }
     references = minifier.convertReferenceKeys(references);
 
-    var convertedLayer = minifier.convertLayerId(history, references);
-    references = convertedLayer.references;
-    history = convertedLayer.history;
+    // var convertedLayer = minifier.convertLayerId(history, references);
+    // references = convertedLayer.references;
+    // history = convertedLayer.history;
 
     return {
       minifier.convertMainKey('version'): ExportImportVersion.version_6_0_0,
