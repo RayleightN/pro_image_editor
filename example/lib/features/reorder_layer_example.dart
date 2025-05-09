@@ -2,7 +2,6 @@
 import 'package:example/core/constants/example_constants.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-
 // Package imports:
 import 'package:pro_image_editor/pro_image_editor.dart';
 
@@ -70,45 +69,46 @@ class _ReorderLayerExampleState extends State<ReorderLayerExample>
               return [
                 ReactiveWidget(
                   stream: rebuildStream,
-                  builder: (_) =>
-                      editor.selectedLayerIndex >= 0 || editor.isSubEditorOpen
-                          ? const SizedBox.shrink()
-                          : Positioned(
-                              bottom: 20,
-                              left: 0,
-                              child: Container(
-                                decoration: BoxDecoration(
-                                  color: Colors.blue.shade700,
-                                  borderRadius: const BorderRadius.only(
-                                    topRight: Radius.circular(100),
-                                    bottomRight: Radius.circular(100),
-                                  ),
-                                ),
-                                child: IconButton(
-                                  onPressed: () {
-                                    showModalBottomSheet(
-                                      context: context,
-                                      builder: (context) {
-                                        return ReorderLayerSheet(
-                                          layers: editor.activeLayers,
-                                          onReorder: (oldIndex, newIndex) {
-                                            editor.moveLayerListPosition(
-                                              oldIndex: oldIndex,
-                                              newIndex: newIndex,
-                                            );
-                                            Navigator.pop(context);
-                                          },
+                  builder: (_) => editor.layerInteractionManager
+                              .selectedLayerIds.isNotEmpty ||
+                          editor.isSubEditorOpen
+                      ? const SizedBox.shrink()
+                      : Positioned(
+                          bottom: 20,
+                          left: 0,
+                          child: Container(
+                            decoration: BoxDecoration(
+                              color: Colors.blue.shade700,
+                              borderRadius: const BorderRadius.only(
+                                topRight: Radius.circular(100),
+                                bottomRight: Radius.circular(100),
+                              ),
+                            ),
+                            child: IconButton(
+                              onPressed: () {
+                                showModalBottomSheet(
+                                  context: context,
+                                  builder: (context) {
+                                    return ReorderLayerSheet(
+                                      layers: editor.activeLayers,
+                                      onReorder: (oldIndex, newIndex) {
+                                        editor.moveLayerListPosition(
+                                          oldIndex: oldIndex,
+                                          newIndex: newIndex,
                                         );
+                                        Navigator.pop(context);
                                       },
                                     );
                                   },
-                                  icon: const Icon(
-                                    Icons.reorder,
-                                    color: Colors.white,
-                                  ),
-                                ),
+                                );
+                              },
+                              icon: const Icon(
+                                Icons.reorder,
+                                color: Colors.white,
                               ),
                             ),
+                          ),
+                        ),
                 ),
               ];
             },

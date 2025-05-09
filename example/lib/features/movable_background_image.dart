@@ -10,6 +10,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:pro_image_editor/pro_image_editor.dart';
+
 import '/core/mixin/example_helper.dart';
 import '/shared/widgets/material_icon_button.dart';
 import '/shared/widgets/pixel_transparent_painter.dart';
@@ -326,7 +327,8 @@ class _MovableBackgroundImageExampleState
                   return [
                     ReactiveWidget(
                       stream: rebuildStream,
-                      builder: (_) => editor.selectedLayerIndex >= 0 ||
+                      builder: (_) => editor.layerInteractionManager
+                                  .selectedLayerIds.isNotEmpty ||
                               editor.isSubEditorOpen
                           ? const SizedBox.shrink()
                           : Positioned(

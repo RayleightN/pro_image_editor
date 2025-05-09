@@ -1,3 +1,4 @@
+import 'package:example/features/multi_selectable_layer_example.dart';
 import 'package:flutter/material.dart';
 
 import '/features/crop_to_main_editor.dart';
@@ -100,6 +101,12 @@ List<Example> kImageEditorExamples = const [
     name: 'Selectable-Layers',
     icon: Icons.select_all_rounded,
     page: SelectableLayerExample(),
+  ),
+  Example(
+    path: '/multi-selectable-layers',
+    name: 'Multi-Selectable-Layers',
+    icon: Icons.select_all_rounded,
+    page: MultiSelectableLayerExample(),
   ),
   Example(
     path: '/generation-configs',

@@ -2,6 +2,8 @@
 import 'dart:ui';
 
 // Project imports:
+import 'package:pro_image_editor/core/models/layers/group_layer.dart';
+
 import '/core/models/layers/layer.dart';
 
 /// A class responsible for managing layers in an image editing environment.
@@ -25,6 +27,8 @@ class LayerCopyManager {
       return createCopyPaintLayer(layer);
     } else if (layer is WidgetLayer) {
       return createCopyWidgetLayer(layer);
+    } else if (layer is GroupLayer) {
+      return createCopyGroupLayer(layer);
     } else {
       return layer;
     }
@@ -109,6 +113,21 @@ class LayerCopyManager {
       rawSize: layer.rawSize,
       opacity: layer.opacity,
       interaction: layer.interaction.copyWith(),
+    );
+  }
+
+  /// Create a copy of a GroupLayer instance.
+  GroupLayer createCopyGroupLayer(GroupLayer layer) {
+    return GroupLayer(
+      id: layer.id,
+      offset: Offset(layer.offset.dx, layer.offset.dy),
+      rotation: layer.rotation,
+      scale: layer.scale,
+      flipX: layer.flipX,
+      flipY: layer.flipY,
+      interaction: layer.interaction.copyWith(),
+      layers: layer.layers.map(copyLayer).toList(),
+      center: layer.center,
     );
   }
 }

@@ -60,6 +60,7 @@ class LayerInteractionHelperWidget extends StatefulWidget
     this.selected = false,
     this.isInteractive = false,
     this.callbacks = const ProImageEditorCallbacks(),
+    this.insideGroup = false,
   });
 
   /// The configuration settings for the image editor.
@@ -125,6 +126,11 @@ class LayerInteractionHelperWidget extends StatefulWidget
   /// If true, the layer is highlighted, and interaction buttons are displayed.
   final bool selected;
 
+  /// Indicates whether the layer is a group.
+  ///
+  /// If true, the layer will not display interaction buttons.
+  final bool insideGroup;
+
   @override
   State<LayerInteractionHelperWidget> createState() =>
       _LayerInteractionHelperWidgetState();
@@ -158,7 +164,8 @@ class _LayerInteractionHelperWidgetState
     var deferManager = DeferManager.maybeOf(context);
 
     if (!widget.isInteractive ||
-        (!widget.selected && deferManager?.selectedLayerId != '')) {
+        (!widget.selected &&
+            (deferManager?.selectedLayerIds.isEmpty ?? false))) {
       // Return the child widget directly if the layer is not interactive.
       return widget.child;
     } else if (!widget.selected) {
@@ -170,8 +177,9 @@ class _LayerInteractionHelperWidgetState
       );
     }
 
-    List<LayerInteractionItem> children =
-        layerInteraction.widgets.children ?? _buildDefaultInteractions();
+    List<LayerInteractionItem> children = widget.insideGroup
+        ? []
+        : layerInteraction.widgets.children ?? _buildDefaultInteractions();
 
     return TooltipVisibility(
       visible: layerInteraction.style.showTooltips,
@@ -182,17 +190,11 @@ class _LayerInteractionHelperWidgetState
           children: [
             layerInteraction.widgets.border
                     ?.call(widget.child, widget.layerData) ??
-                Container(
-                  margin: EdgeInsets.all(
-                    layerInteraction.style.buttonRadius +
-                        layerInteraction.style.strokeWidth * 2,
+                CustomPaint(
+                  foregroundPainter: LayerInteractionBorderPainter(
+                    style: layerInteraction.style,
                   ),
-                  child: CustomPaint(
-                    foregroundPainter: LayerInteractionBorderPainter(
-                      style: layerInteraction.style,
-                    ),
-                    child: widget.child,
-                  ),
+                  child: widget.child,
                 ),
             ...children.map(
               (item) => item.call(

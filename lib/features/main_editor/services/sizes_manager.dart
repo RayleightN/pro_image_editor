@@ -90,7 +90,7 @@ class SizesManager {
       );
 
   /// Calculates the vertical center position of the editor.
-  double editorCenterY(int selectedLayerIndex) =>
+  double editorCenterY() =>
 
       /// Computes the vertical center by subtracting the heights of the
       /// app bar and bottom bar from the editor's total height.

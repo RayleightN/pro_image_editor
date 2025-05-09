@@ -48,7 +48,7 @@ class MainEditorCallbacks extends StandaloneEditorCallbacks {
   /// A callback function that is triggered when a layer is updated.
   ///
   /// The [Layer] parameter provides information about the updated layer.
-  final Function(Layer)? onUpdateLayer;
+  final Function(List<Layer>)? onUpdateLayer;
 
   /// A callback function that is triggered when a layer is removed.
   ///
@@ -215,7 +215,7 @@ class MainEditorCallbacks extends StandaloneEditorCallbacks {
   /// layer is selected, the callback is called with blank.
   ///
   /// This callback is not called when [LayerInteractionSelectable] is disabled.
-  final ValueChanged<String>? onSelectedLayerChanged;
+  final ValueChanged<List<String>>? onSelectedLayerChanged;
 
   /// Handles the addition of a layer.
   ///
@@ -230,8 +230,8 @@ class MainEditorCallbacks extends StandaloneEditorCallbacks {
   ///
   /// This method calls the [onUpdateLayer] callback with the provided [layer]
   /// and then calls [handleUpdateUI].
-  void handleUpdateLayer(Layer layer) {
-    onUpdateLayer?.call(layer);
+  void handleUpdateLayer(List<Layer> layers) {
+    onUpdateLayer?.call(layers);
     handleUpdateUI();
   }
 

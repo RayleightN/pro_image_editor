@@ -53,7 +53,7 @@ class MainEditorInteractiveContent extends StatelessWidget {
     required this.configs,
     required this.layerInteractionManager,
     required this.controllers,
-    required this.selectedLayerIndex,
+    // required this.selectedLayerIndexes,
     required this.processFinalImage,
     required this.rebuildController,
     required this.stateManager,
@@ -105,8 +105,8 @@ class MainEditorInteractiveContent extends StatelessWidget {
   /// A key for managing the interactive viewer state.
   final GlobalKey<ExtendedInteractiveViewerState> interactiveViewerKey;
 
-  /// The index of the currently selected layer.
-  final int selectedLayerIndex;
+  /// The set of layer indexes that are currently selected.
+  // final List<int> selectedLayerIndexes;
 
   /// Indicates whether the final image is being processed.
   final bool processFinalImage;
@@ -119,8 +119,8 @@ class MainEditorInteractiveContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    bool isLayerSelected = selectedLayerIndex >= 0;
-
+    // bool isLayerSelected = selectedLayerIndexes.isNotEmpty;
+    bool isLayerSelected = layerInteractionManager.selectedLayerIds.isNotEmpty;
     return Center(
       child: Stack(
         children: [
@@ -155,7 +155,7 @@ class MainEditorInteractiveContent extends StatelessWidget {
           /// Build helper content
           if (!processFinalImage) ...[
             buildHelperLines(),
-            if (selectedLayerIndex >= 0) buildRemoveArea(),
+            // if (selectedLayerIndexes.isNotEmpty) buildRemoveArea(),
           ],
 
           /// Build custom body items

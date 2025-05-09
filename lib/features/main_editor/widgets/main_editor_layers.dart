@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:pro_image_editor/shared/widgets/layer/interaction_helper/layer_interaction_helper_widget.dart';
+import 'package:pro_image_editor/shared/widgets/layer/widgets/auto_sized_stack.dart';
 
 import '/core/models/editor_callbacks/pro_image_editor_callbacks.dart';
 import '/core/models/editor_configs/pro_image_editor_configs.dart';
@@ -44,7 +46,7 @@ class MainEditorLayers extends StatefulWidget {
     required this.configs,
     required this.callbacks,
     required this.sizesManager,
-    required this.selectedLayerIndex,
+    // required this.selectedLayerIndexes,
     required this.activeLayers,
     required this.isSubEditorOpen,
     required this.checkInteractiveViewer,
@@ -52,6 +54,7 @@ class MainEditorLayers extends StatefulWidget {
     required this.state,
     required this.setTempLayer,
     required this.onContextMenuToggled,
+    required this.onSelectionRectChanged,
   });
 
   /// Represents the current state of the editor.
@@ -78,8 +81,8 @@ class MainEditorLayers extends StatefulWidget {
   /// List of active layers in the editor.
   final List<Layer> activeLayers;
 
-  /// The index of the currently selected layer.
-  final int selectedLayerIndex;
+  /// The set of layer indexes that are currently selected.
+  // final List<int> selectedLayerIndexes;
 
   /// Indicates whether a sub-editor is currently open.
   final bool isSubEditorOpen;
@@ -96,12 +99,17 @@ class MainEditorLayers extends StatefulWidget {
   /// Callback triggered when the context menu is toggled.
   final Function(bool isOpen)? onContextMenuToggled;
 
+  /// Callback triggered when the selection rectangle changes.
+  final ValueChanged<Rect> onSelectionRectChanged;
+
   @override
   State<MainEditorLayers> createState() => _MainEditorLayersState();
 }
 
 class _MainEditorLayersState extends State<MainEditorLayers> {
   final _deferId = ValueNotifier(generateUniqueId());
+
+  Rect _selectionRect = Rect.zero;
 
   /// Key for managing mouse cursor regions.
   final _mouseCursorsKey = GlobalKey<ExtendedRebuildMouseRegionState>();
@@ -119,10 +127,25 @@ class _MainEditorLayersState extends State<MainEditorLayers> {
   void _handleLayerTap(Layer layer) {
     if (widget.layerInteractionManager.layersAreSelectable(widget.configs) &&
         layer.interaction.enableSelection) {
-      widget.layerInteractionManager.selectedLayerId =
-          layer.id == widget.layerInteractionManager.selectedLayerId
-              ? ''
-              : layer.id;
+      switch (widget.configs.layerInteraction.selectionMode) {
+        case LayerInteractionSelectionMode.single:
+          if (widget.layerInteractionManager.selectedLayerIds
+              .contains(layer.id)) {
+            widget.layerInteractionManager.selectedLayerIds.clear();
+          } else {
+            widget.layerInteractionManager.selectedLayerIds = [layer.id];
+          }
+          break;
+        case LayerInteractionSelectionMode.multiple:
+          if (widget.layerInteractionManager.selectedLayerIds
+              .contains(layer.id)) {
+            widget.layerInteractionManager.selectedLayerIds.remove(layer.id);
+          } else {
+            widget.layerInteractionManager.selectedLayerIds.add(layer.id);
+          }
+          break;
+      }
+
       widget.checkInteractiveViewer();
     } else if (layer is TextLayer && layer.interaction.enableEdit) {
       widget.onTextLayerTap(layer);
@@ -135,7 +158,7 @@ class _MainEditorLayersState extends State<MainEditorLayers> {
     }
     widget.controllers.uiLayerCtrl.add(null);
     widget.callbacks.mainEditorCallbacks?.handleUpdateUI();
-    widget.state.selectedLayerIndex = -1;
+    // widget.state.selectedLayerIndexes.clear();
     widget.checkInteractiveViewer();
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -145,13 +168,13 @@ class _MainEditorLayersState extends State<MainEditorLayers> {
   }
 
   void _handleTapDown(int index, Layer layer) {
-    widget.state.selectedLayerIndex = index;
+    // widget.state.selectedLayerIndexes.add(index);
     widget.setTempLayer(layer);
     widget.checkInteractiveViewer();
   }
 
   void _handleScaleRotateDown(int index, Size layerOriginalSize, Layer layer) {
-    widget.state.selectedLayerIndex = index;
+    // widget.state.selectedLayerIndexes.add(index);
     widget.layerInteractionManager
       ..rotateScaleLayerSizeHelper = layerOriginalSize
       ..rotateScaleLayerScaleHelper = layer.scale;
@@ -162,7 +185,7 @@ class _MainEditorLayersState extends State<MainEditorLayers> {
     widget.layerInteractionManager
       ..rotateScaleLayerSizeHelper = null
       ..rotateScaleLayerScaleHelper = null;
-    widget.state.setState(() => widget.state.selectedLayerIndex = -1);
+    // widget.state.setState(() => widget.state.selectedLayerIndexes.clear());
     widget.checkInteractiveViewer();
     widget.callbacks.mainEditorCallbacks?.handleUpdateUI();
   }
@@ -187,10 +210,18 @@ class _MainEditorLayersState extends State<MainEditorLayers> {
     }
   }
 
+  void _handleSelectionRectChanged(Rect rect) {
+    if (_selectionRect == rect) return;
+    _selectionRect = rect;
+    widget.onSelectionRectChanged(rect);
+    WidgetsBinding.instance.addPostFrameCallback((_) => setState(() {}));
+  }
+
   @override
   Widget build(BuildContext context) {
     return IgnorePointer(
-      ignoring: widget.selectedLayerIndex >= 0,
+      // ignoring: widget.selectedLayerIndexes.isNotEmpty,
+      ignoring: false,
       child: StreamBuilder<bool>(
         stream: widget.controllers.layerHeroResetCtrl.stream,
         initialData: false,
@@ -206,6 +237,7 @@ class _MainEditorLayersState extends State<MainEditorLayers> {
 
   /// Builds the layer repaint boundary widget
   Widget _buildLayerRepaintBoundary() {
+    if (widget.activeLayers.isEmpty) return const SizedBox.shrink();
     return RepaintBoundary(
       child: ExtendedRebuildMouseRegion(
         key: _mouseCursorsKey,
@@ -215,16 +247,20 @@ class _MainEditorLayersState extends State<MainEditorLayers> {
             builder: (_, deferId, __) {
               return DeferredPointerHandler(
                 id: deferId,
-                selectedLayerId: widget.layerInteractionManager.selectedLayerId,
+                selectedLayerIds:
+                    widget.layerInteractionManager.selectedLayerIds,
                 child: StreamBuilder(
                   stream: widget.controllers.uiLayerCtrl.stream,
                   builder: (context, snapshot) {
                     return Stack(
-                      children: widget.activeLayers
-                          .asMap()
-                          .entries
-                          .map(_buildLayerWidget)
-                          .toList(),
+                      fit: StackFit.loose,
+                      children: [
+                        ...widget.activeLayers
+                            .asMap()
+                            .entries
+                            .map(_buildLayerWidget),
+                        ..._buildGroupedItem(),
+                      ],
                     );
                   },
                 ),
@@ -232,6 +268,83 @@ class _MainEditorLayersState extends State<MainEditorLayers> {
             }),
       ),
     );
+  }
+
+  /// Builds grouped item
+  List<Widget> _buildGroupedItem() {
+    if (widget.layerInteractionManager.selectedLayerIds.isEmpty) {
+      _handleSelectionRectChanged(Rect.zero);
+      return [];
+    }
+
+    return [
+      Positioned.fromRect(
+        rect: _selectionRect,
+        child: LayerInteractionHelperWidget(
+          layerData: Layer(),
+          configs: widget.configs,
+          selected: true,
+          isInteractive: true,
+          onRemoveLayer: () => widget.layerInteractionManager.selectedLayerIds
+              .map((e) => widget.activeLayers.firstWhere((l) => l.id == e))
+              .forEach(_handleRemoveLayer),
+          onScaleRotateDown: (details) {
+            widget.layerInteractionManager.selectedLayerIds
+                .map((e) => widget.activeLayers.firstWhere((l) => l.id == e))
+                .toList()
+                .asMap()
+                .entries
+                .forEach(
+                  (e) => _handleScaleRotateDown(
+                      e.key, _selectionRect.size, e.value),
+                );
+          },
+          onScaleRotateUp: (details) => _handleScaleRotateUp(),
+          callbacks: widget.callbacks,
+          child: const SizedBox.expand(),
+        ),
+      ),
+      UnconstrainedBox(
+        child: AutoSizedStack(
+          onSelectionRectChanged: _handleSelectionRectChanged,
+          children: [
+            ...widget.activeLayers
+                .asMap()
+                .entries
+                .where((e) => widget.layerInteractionManager.selectedLayerIds
+                    .contains(e.value.id))
+                .map((e) {
+              Layer layer = e.value;
+              final editorCenterX = widget.sizesManager.editorSize.width / 2;
+              final editorCenterY = widget.sizesManager.editorCenterY();
+              double offsetX = layer.offset.dx + editorCenterX;
+              double offsetY = layer.offset.dy + editorCenterY;
+              return PositionedItem(
+                offset: Offset(offsetX, offsetY),
+                child: Transform(
+                  alignment: Alignment.center,
+                  transform: Matrix4.identity()
+                    ..setEntry(3, 2, 0.001)
+                    ..rotateZ(layer.rotation),
+                  child: Opacity(
+                    opacity: 0,
+                    child: RawLayerWidget(
+                      layer: layer,
+                      configs: widget.configs,
+                      showMoveCursor: ValueNotifier(false),
+                      onHitChanged: (state) {},
+                      enableHitDetection: false,
+                      selected: true,
+                      highPerformanceMode: false,
+                    ),
+                  ),
+                ),
+              );
+            })
+          ],
+        ),
+      )
+    ];
   }
 
   /// Builds a single layer widget
@@ -243,11 +356,11 @@ class _MainEditorLayersState extends State<MainEditorLayers> {
       configs: widget.configs,
       callbacks: widget.callbacks,
       editorCenterX: widget.sizesManager.editorSize.width / 2,
-      editorCenterY:
-          widget.sizesManager.editorCenterY(widget.selectedLayerIndex),
+      editorCenterY: widget.sizesManager.editorCenterY(),
       layerData: layer,
       enableHitDetection: widget.layerInteractionManager.enabledHitDetection,
-      selected: widget.layerInteractionManager.selectedLayerId == layer.id,
+      selected:
+          widget.layerInteractionManager.selectedLayerIds.contains(layer.id),
       isInteractive: !widget.isSubEditorOpen,
       highPerformanceMode:
           widget.layerInteractionManager.freeStyleHighPerformance,
