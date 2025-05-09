@@ -165,6 +165,24 @@ class TextEditorState extends State<TextEditor>
     }
   }
 
+  /// handle when paste a text layer.
+  void onPasteLayer(TextLayer layer) {
+    textCtrl.text = layer.text;
+    align = layer.align;
+    _fontScale = layer.fontScale;
+    backgroundColorMode = layer.colorMode!;
+    if (layer.customSecondaryColor) {
+      _primaryColor = layer.color;
+      _secondaryColor = layer.background;
+    } else {
+      _primaryColor = backgroundColorMode == LayerBackgroundMode.background
+          ? layer.background
+          : layer.color;
+    }
+    colorPosition = layer.colorPickerPosition ?? 0;
+    setState(() {});
+  }
+
   /// Calculates the contrast color for a given color.
   Color getContrastColor(Color color) {
     int d = color.computeLuminance() > 0.5 ? 0 : 255;
@@ -201,7 +219,9 @@ class TextEditorState extends State<TextEditor>
 
   /// Gets the text font size based on the selected font scale.
   double get _textFontSize {
-    return textEditorConfigs.initFontSize * _fontScale;
+    return textEditorConfigs.initFontSize *
+        _fontScale *
+        (widget.layer?.scale ?? 1);
   }
 
   /// Toggles the text alignment between left, center, and right.
@@ -311,23 +331,26 @@ class TextEditorState extends State<TextEditor>
   void done() {
     if (textCtrl.text.trim().isNotEmpty) {
       Navigator.of(context).pop(
-        TextLayer(
-          text: textCtrl.text.trim(),
-          background: _backgroundColor,
-          color: _textColor,
-          align: align,
-          fontScale: _fontScale,
-          colorMode: backgroundColorMode,
-          colorPickerPosition: colorPosition,
-          textStyle: selectedTextStyle,
-          customSecondaryColor: _secondaryColor != null,
-        ),
+        textLayer,
       );
     } else {
       Navigator.of(context).pop();
     }
     textEditorCallbacks?.handleDone();
   }
+
+  /// the text layer to be created or updated.
+  TextLayer get textLayer => TextLayer(
+        text: textCtrl.text.trim(),
+        background: _backgroundColor,
+        color: _textColor,
+        align: align,
+        fontScale: _fontScale,
+        colorMode: backgroundColorMode,
+        colorPickerPosition: colorPosition,
+        textStyle: selectedTextStyle,
+        customSecondaryColor: _secondaryColor != null,
+      );
 
   @override
   Widget build(BuildContext context) {

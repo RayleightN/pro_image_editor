@@ -61,6 +61,7 @@ class LayerInteractionHelperWidget extends StatefulWidget
     this.isInteractive = false,
     this.callbacks = const ProImageEditorCallbacks(),
     this.insideGroup = false,
+    required this.onUnLockLayer,
   });
 
   /// The configuration settings for the image editor.
@@ -126,10 +127,14 @@ class LayerInteractionHelperWidget extends StatefulWidget
   /// If true, the layer is highlighted, and interaction buttons are displayed.
   final bool selected;
 
+
   /// Indicates whether the layer is a group.
   ///
   /// If true, the layer will not display interaction buttons.
   final bool insideGroup;
+
+  /// The function to be called when the layer is unlocked.
+  final VoidCallback onUnLockLayer;
 
   @override
   State<LayerInteractionHelperWidget> createState() =>
@@ -181,12 +186,23 @@ class _LayerInteractionHelperWidgetState
         ? []
         : layerInteraction.widgets.children ?? _buildDefaultInteractions();
 
+    final interactions = LayerItemInteractions(
+      edit: widget.onEditLayer ?? () {},
+      remove: widget.onRemoveLayer ?? () {},
+      scaleRotateDown: (event) {
+        widget.onScaleRotateDown?.call(event);
+      },
+      scaleRotateUp: (event) {
+        widget.onScaleRotateUp?.call(event);
+      },
+    );
     return TooltipVisibility(
       visible: layerInteraction.style.showTooltips,
       child: DeferPointer(
         child: Stack(
           fit: StackFit.passthrough,
           alignment: Alignment.center,
+          clipBehavior: Clip.none,
           children: [
             layerInteraction.widgets.border
                     ?.call(widget.child, widget.layerData) ??
@@ -196,22 +212,125 @@ class _LayerInteractionHelperWidgetState
                   ),
                   child: widget.child,
                 ),
-            ...children.map(
-              (item) => item.call(
-                _rebuildStream.stream,
-                widget.layerData,
-                LayerItemInteractions(
-                  edit: widget.onEditLayer ?? () {},
-                  remove: widget.onRemoveLayer ?? () {},
-                  scaleRotateDown: (event) {
-                    widget.onScaleRotateDown?.call(event);
-                  },
-                  scaleRotateUp: (event) {
-                    widget.onScaleRotateUp?.call(event);
-                  },
+            Positioned(
+              top: 0,
+              child: Transform.rotate(
+                angle: 0,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                  height: 40,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(20),
+                    color: Colors.white,
+                    border: Border.all(
+                      color: const Color(0xFF828282).withValues(alpha: 0.15),
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: const Color(0xFF828282).withValues(alpha: 0.15),
+                        blurRadius: 6,
+                        offset: const Offset(0, 1),
+                      ),
+                      BoxShadow(
+                        color: const Color(0xFF828282).withValues(alpha: 0.15),
+                        blurRadius: 7.5,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: Row(
+                    children: [
+                      if (widget.layerData.interaction.isLocked)
+                        _buildUnlock()
+                      else
+                        ...children.map(
+                          (item) => item.call(
+                            _rebuildStream.stream,
+                            widget.layerData,
+                            LayerItemInteractions(
+                              edit: widget.onEditLayer ?? () {},
+                              remove: widget.onRemoveLayer ?? () {},
+                              scaleRotateDown: (event) {
+                                widget.onScaleRotateDown?.call(event);
+                              },
+                              scaleRotateUp: (event) {
+                                widget.onScaleRotateUp?.call(event);
+                              },
+                            ),
+                          ),
+                        ),
+                      // ReactiveWidget(
+                      //   stream: _rebuildStream.stream,
+                      //   builder: (_) => LayerInteractionButton(
+                      //     rotation: 0,
+                      //     onTap: interactions.remove,
+                      //     buttonRadius: layerInteraction.style.buttonRadius,
+                      //     cursor: layerInteraction.style.removeCursor,
+                      //     icon: Icons.delete_outline,
+                      //     tooltip: i18n.layerInteraction.remove,
+                      //     color: layerInteraction.style.buttonRemoveColor,
+                      //     background:
+                      //         layerInteraction.style.buttonRemoveBackground,
+                      //   ),
+                      // ),
+                      // const SizedBox(
+                      //   width: 8,
+                      // ),
+                      // ReactiveWidget(
+                      //     stream: _rebuildStream.stream,
+                      //     builder: (_) => LayerInteractionButton(
+                      //           rotation: 0,
+                      //           onTap: interactions.edit,
+                      //           buttonRadius:
+                      //               layerInteraction.style.buttonRadius,
+                      //           cursor: layerInteraction.style.editCursor,
+                      //           icon: Icons.more_horiz,
+                      //           tooltip: i18n.layerInteraction.edit,
+                      //           color:
+                      //               layerInteraction.style.buttonEditTextColor,
+                      //           background: layerInteraction
+                      //               .style.buttonEditTextBackground,
+                      //         )),
+                    ],
+                  ),
                 ),
               ),
             ),
+            ReactiveWidget(
+              stream: _rebuildStream.stream,
+              builder: (_) => Positioned(
+                bottom: 8,
+                child: LayerInteractionButton(
+                  rotation: -widget.layerData.rotation,
+                  onScaleRotateDown: interactions.scaleRotateDown,
+                  onScaleRotateUp: interactions.scaleRotateUp,
+                  buttonRadius: layerInteraction.style.buttonRadius,
+                  cursor: layerInteraction.style.rotateScaleCursor,
+                  icon: Icons.sync,
+                  tooltip: i18n.layerInteraction.rotateScale,
+                  color: layerInteraction.style.buttonScaleRotateColor,
+                  background:
+                      layerInteraction.style.buttonScaleRotateBackground,
+                ),
+              ),
+            ),
+            // ...children.map(
+            //   (item) => item.call(
+            //     _rebuildStream.stream,
+            //     widget.layerData,
+            //     LayerItemInteractions(
+            //       edit: widget.onEditLayer ?? () {},
+            //       remove: widget.onRemoveLayer ?? () {},
+            //       scaleRotateDown: (event) {
+            //         widget.onScaleRotateDown?.call(event);
+            //       },
+            //       scaleRotateUp: (event) {
+            //         widget.onScaleRotateUp?.call(event);
+            //       },
+            //     ),
+            //   ),
+            // ),
+            // if (widget.layerData.interaction.isLocked) _buildUnlock(),
           ],
         ),
       ),
@@ -219,6 +338,9 @@ class _LayerInteractionHelperWidgetState
   }
 
   List<LayerInteractionItem> _buildDefaultInteractions() {
+    if (widget.layerData.interaction.isLocked) {
+      return [];
+    }
     bool isLayerEditable = widget.layerData.interaction.enableEdit &&
             widget.layerData.runtimeType == TextLayer ||
         (widget.layerData.runtimeType == WidgetLayer &&
@@ -239,6 +361,19 @@ class _LayerInteractionHelperWidgetState
             builder: (_) => _buildRotateScaleIcon(interactions),
           ),
     ];
+  }
+
+  Widget _buildUnlock() {
+    return LayerInteractionButton(
+      rotation: -widget.layerData.rotation,
+      onTap: widget.onUnLockLayer,
+      buttonRadius: layerInteraction.style.buttonRadius,
+      cursor: layerInteraction.style.removeCursor,
+      icon: Icons.lock_open,
+      tooltip: i18n.layerInteraction.remove,
+      color: const Color(0xff1a6dff),
+      background: Colors.white,
+    );
   }
 
   Widget _buildRotateScaleIcon(LayerItemInteractions interactions) {
