@@ -231,35 +231,29 @@ class MainEditorInteractiveContent extends StatelessWidget {
   }
 
   Widget _buildCropAreaOverlay() {
-    return Hero(
-      tag: 'crop_layer_painter_hero',
-      child: StreamBuilder(
-        stream: controllers.cropLayerPainterCtrl.stream,
-        builder: (context, snapshot) {
-          return CustomPaint(
-            foregroundPainter: configs.imageGeneration.cropToImageBounds
-                ? CropLayerPainter(
-                    opacity:
-                        configs.mainEditor.style.outsideCaptureAreaLayerOpacity,
-                    backgroundColor: configs.mainEditor.style.background,
-                    imgRatio: stateManager.transformConfigs.isNotEmpty
-                        ? stateManager
-                            .transformConfigs.cropRect.size.aspectRatio
-                        : sizesManager.decodedImageSize.aspectRatio,
-                    isRoundCropper: configs.cropRotateEditor.enableRoundCropper,
-                    is90DegRotated:
-                        stateManager.transformConfigs.is90DegRotated,
-                    interactiveViewerScale:
-                        interactiveViewerKey.currentState?.scaleFactor ?? 1.0,
-                    interactiveViewerOffset:
-                        interactiveViewerKey.currentState?.offset ??
-                            Offset.zero,
-                  )
-                : null,
-            child: const SizedBox.expand(),
-          );
-        },
-      ),
+    return StreamBuilder(
+      stream: controllers.cropLayerPainterCtrl.stream,
+      builder: (context, snapshot) {
+        return CustomPaint(
+          foregroundPainter: configs.imageGeneration.cropToImageBounds
+              ? CropLayerPainter(
+                  opacity:
+                      configs.mainEditor.style.outsideCaptureAreaLayerOpacity,
+                  backgroundColor: configs.mainEditor.style.background,
+                  imgRatio: stateManager.transformConfigs.isNotEmpty
+                      ? stateManager.transformConfigs.cropRect.size.aspectRatio
+                      : sizesManager.decodedImageSize.aspectRatio,
+                  isRoundCropper: configs.cropRotateEditor.enableRoundCropper,
+                  is90DegRotated: stateManager.transformConfigs.is90DegRotated,
+                  interactiveViewerScale:
+                      interactiveViewerKey.currentState?.scaleFactor ?? 1.0,
+                  interactiveViewerOffset:
+                      interactiveViewerKey.currentState?.offset ?? Offset.zero,
+                )
+              : null,
+          child: const SizedBox.expand(),
+        );
+      },
     );
   }
 }

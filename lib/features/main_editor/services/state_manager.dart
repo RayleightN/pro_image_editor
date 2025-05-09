@@ -293,4 +293,26 @@ class StateManager {
       }
     }
   }
+
+  /// Unlocks the interaction state of the selected layer.
+  void lockSelectedLayerInteraction({
+    required Layer layer,
+  }) {
+    for (Layer layerData in activeLayers) {
+      if (layerData.id == layer.id) {
+        layerData.interaction.lock();
+      }
+    }
+  }
+
+  /// Unlocks the interaction state of the selected layer.
+  void unLockSelectedLayerInteraction({
+    required Layer layer,
+  }) {
+    for (Layer layerData in activeLayers) {
+      if (layerData.id == layer.id) {
+        layerData.interaction.toggleAll(true);
+      }
+    }
+  }
 }

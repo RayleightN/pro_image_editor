@@ -1752,6 +1752,20 @@ class ProImageEditorState extends State<ProImageEditor>
     mainEditorCallbacks?.handleUpdateUI();
   }
 
+  /// add custom layer to the editor.
+  void onAddCustomLayer(WidgetLayer layer) async {
+    setState(() => layerInteractionManager.selectedLayerId = '');
+    _checkInteractiveViewer();
+    ServicesBinding.instance.keyboard.removeHandler(_onKeyEvent);
+    ServicesBinding.instance.keyboard.addHandler(_onKeyEvent);
+    if (!mounted) return;
+
+    addLayer(layer);
+
+    setState(() {});
+    mainEditorCallbacks?.handleUpdateUI();
+  }
+
   /// Moves a layer in the list to a new position.
   ///
   /// - `oldIndex` is the current index of the layer.
@@ -2132,6 +2146,23 @@ class ProImageEditorState extends State<ProImageEditor>
     );
   }
 
+  /// unlock selected layer.
+  void unLockLayer(Layer? layer) {
+    if (layer == null) return;
+    stateManager.unLockSelectedLayerInteraction(
+      layer: layer,
+    );
+  }
+
+  /// on lock a layer.
+  void lockLayer(Layer? layer) {
+    if (layer == null) return;
+    stateManager.lockSelectedLayerInteraction(
+      layer: layer,
+    );
+    clearLayerSelection();
+  }
+
   /// Clears the currently selected layer by:
   /// - Resetting the selected layer index to -1
   /// - Clearing the selected layer ID in the [layerInteractionManager]
@@ -2509,6 +2540,7 @@ class ProImageEditorState extends State<ProImageEditor>
         _isContextMenuOpen = isOpen;
       },
       onSelectionRectChanged: (value) => _selectionRect = value,
+      stateManager: stateManager,
     );
   }
 

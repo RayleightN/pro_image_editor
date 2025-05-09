@@ -14,6 +14,7 @@ import '/shared/utils/unique_id_generator.dart';
 import '/shared/widgets/extended/mouse_region/extended_rebuild_mouse_region.dart';
 import '/shared/widgets/layer/layer_widget.dart';
 import '../main_editor.dart';
+import '../services/state_manager.dart';
 
 /// A widget that manages and displays layers in the main editor, handling
 /// interactions, configurations, and callbacks for user actions.
@@ -55,6 +56,7 @@ class MainEditorLayers extends StatefulWidget {
     required this.setTempLayer,
     required this.onContextMenuToggled,
     required this.onSelectionRectChanged,
+    required this.stateManager,
   });
 
   /// Represents the current state of the editor.
@@ -101,6 +103,9 @@ class MainEditorLayers extends StatefulWidget {
 
   /// Callback triggered when the selection rectangle changes.
   final ValueChanged<Rect> onSelectionRectChanged;
+
+  /// state manager
+  final StateManager stateManager;
 
   @override
   State<MainEditorLayers> createState() => _MainEditorLayersState();
@@ -215,6 +220,11 @@ class _MainEditorLayersState extends State<MainEditorLayers> {
     _selectionRect = rect;
     widget.onSelectionRectChanged(rect);
     WidgetsBinding.instance.addPostFrameCallback((_) => setState(() {}));
+  }
+  
+  void _handleUnlockLayer(Layer layer) {
+    widget.state.setState(() => widget.state.unLockLayer(layer));
+    widget.callbacks.mainEditorCallbacks?.handleUpdateUI();
   }
 
   @override
@@ -373,6 +383,7 @@ class _MainEditorLayersState extends State<MainEditorLayers> {
       onContextMenuToggled: widget.onContextMenuToggled,
       onScaleRotateUp: (details) => _handleScaleRotateUp(),
       onRemoveTap: () => _handleRemoveLayer(layer),
+      onUnlockLayer: () => _handleUnlockLayer(layer),
     );
   }
 }
