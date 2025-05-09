@@ -309,7 +309,7 @@ class MainEditorCallbacks extends StandaloneEditorCallbacks {
   /// Creates a copy with modified editor callbacks.
   MainEditorCallbacks copyWith({
     Function(Layer)? onAddLayer,
-    Function(Layer)? onUpdateLayer,
+    Function(List<Layer>)? onUpdateLayer,
     Function(Layer)? onRemoveLayer,
     Function(SubEditor)? onOpenSubEditor,
     Function(SubEditor)? onEndCloseSubEditor,
@@ -327,7 +327,7 @@ class MainEditorCallbacks extends StandaloneEditorCallbacks {
     Function(Matrix4 value)? onEditorZoomMatrix4Change,
     PopInvokedWithResultCallback<dynamic>? onPopInvoked,
     HelperLinesCallbacks? helperLines,
-    ValueChanged<String>? onSelectedLayerChanged,
+    ValueChanged<List<String>>? onSelectedLayerChanged,
     Function()? onInit,
     Function()? onAfterViewInit,
     Function()? onUpdateUI,
