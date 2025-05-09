@@ -1,5 +1,8 @@
 # Changelog
 
+## 9.8.0
+ - **FEAT**(Layer): Introduce `BoxConstraints` to `Layer` class for enhanced constraint management and layout control.
+
 ## 9.7.3
  - **FEAT**(Main-Editor): Add EditorSafeArea to the Main editor to follow SubEditor logic.
 
