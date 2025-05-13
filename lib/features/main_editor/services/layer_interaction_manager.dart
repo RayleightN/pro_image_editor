@@ -33,7 +33,7 @@ class LayerInteractionManager {
   final HelperLinesCallbacks? helperLinesCallbacks;
 
   /// Callback function to be called when the selected layer changes.
-  final ValueChanged<String>? onSelectedLayerChanged;
+  final ValueChanged<List<String>>? onSelectedLayerChanged;
 
   /// Debounce for scaling actions in the editor.
   late Debounce scaleDebounce;
@@ -48,22 +48,22 @@ class LayerInteractionManager {
   double rotationHelperLineDeg = 0;
 
   /// The base scale factor from the layer;
-  double baseScaleFactor = 1.0;
+  Map<String, double> baseScaleFactor = {};
 
   /// The base angle factor from the layer;
-  double baseAngleFactor = 0;
+  Map<String, double> baseAngleFactor = {};
 
   /// X-coordinate where snapping started.
-  double snapStartPosX = 0;
+  Map<String, double> snapStartPosX = {};
 
   /// Y-coordinate where snapping started.
-  double snapStartPosY = 0;
+  Map<String, double> snapStartPosY = {};
 
   /// Initial rotation angle when snapping started.
-  double snapStartRotation = 0;
+  Map<String, double> snapStartRotation = {};
 
   /// Last recorded rotation angle during snapping.
-  double snapLastRotation = 0;
+  Map<String, double> snapLastRotation = {};
 
   /// Flag indicating if vertical helper lines should be displayed.
   bool showVerticalHelperLine = false;
@@ -115,16 +115,17 @@ class LayerInteractionManager {
   /// Span for detecting hits on layers.
   final double hitSpan = 10;
 
-  /// The ID of the currently selected layer.
-  String _selectedLayerId = '';
+  /// The ID of the currently selected layers.
+  List<String> _selectedLayerIds = [];
 
-  /// Returns the ID of the currently selected layer.
-  String get selectedLayerId => _selectedLayerId;
+  /// Returns the ID of the currently selected layers.
+  List<String> get selectedLayerIds => _selectedLayerIds;
 
-  /// Sets the ID of the currently selected layer.
-  set selectedLayerId(String id) {
-    _selectedLayerId = id;
-    onSelectedLayerChanged?.call(_selectedLayerId);
+  /// Sets the ID of the currently selected layers.
+  /// ?????????
+  set selectedLayerIds(List<String> ids) {
+    _selectedLayerIds = ids;
+    onSelectedLayerChanged?.call(_selectedLayerIds);
   }
 
   /// Helper variable for scaling during rotation of a layer.
@@ -135,10 +136,10 @@ class LayerInteractionManager {
   Size? rotateScaleLayerSizeHelper;
 
   /// Last recorded X-axis position for layers.
-  LayerLastPosition lastPositionX = LayerLastPosition.center;
+  Map<String, LayerLastPosition> lastPositionX = {};
 
   /// Last recorded Y-axis position for layers.
-  LayerLastPosition lastPositionY = LayerLastPosition.center;
+  Map<String, LayerLastPosition> lastPositionY = {};
 
   Offset? _rotateScaleButtonStartPosition;
 
@@ -171,7 +172,7 @@ class LayerInteractionManager {
     required Offset editorScaleOffset,
     required ProImageEditorConfigs configs,
     required ScaleUpdateDetails details,
-    required Layer activeLayer,
+    required List<Layer> activeLayers,
     required Size editorSize,
     required LayerInteractionStyle layerTheme,
   }) {
@@ -217,50 +218,52 @@ class LayerInteractionManager {
       return newDistance / oldDistance;
     }
 
-    Offset layerOffset = activeLayer.offset;
+    for (var activeLayer in activeLayers) {
+      Offset layerOffset = activeLayer.offset;
 
-    Offset realTouchPosition =
-        (details.localFocalPoint - editorScaleOffset) / editorScaleFactor;
+      Offset realTouchPosition =
+          (details.localFocalPoint - editorScaleOffset) / editorScaleFactor;
 
-    Offset touchPositionFromLayerCenter =
-        realTouchPosition - editorSize.center(Offset.zero) - layerOffset;
+      Offset touchPositionFromLayerCenter =
+          realTouchPosition - editorSize.center(Offset.zero) - layerOffset;
 
-    if (activeLayer.flipX) {
-      touchPositionFromLayerCenter = Offset(
-        -touchPositionFromLayerCenter.dx,
-        touchPositionFromLayerCenter.dy,
-      );
-    }
-    if (activeLayer.flipY) {
-      touchPositionFromLayerCenter = Offset(
-        touchPositionFromLayerCenter.dx,
-        -touchPositionFromLayerCenter.dy,
-      );
-    }
+      if (activeLayer.flipX) {
+        touchPositionFromLayerCenter = Offset(
+          -touchPositionFromLayerCenter.dx,
+          touchPositionFromLayerCenter.dy,
+        );
+      }
+      if (activeLayer.flipY) {
+        touchPositionFromLayerCenter = Offset(
+          touchPositionFromLayerCenter.dx,
+          -touchPositionFromLayerCenter.dy,
+        );
+      }
 
-    _rotateScaleButtonStartPosition ??= touchPositionFromLayerCenter;
+      _rotateScaleButtonStartPosition ??= touchPositionFromLayerCenter;
 
-    if (activeLayer.interaction.enableScale) {
-      activeLayer.scale = baseScaleFactor *
-          calculateScale(
-            _rotateScaleButtonStartPosition!,
-            touchPositionFromLayerCenter,
-          );
-      _setMinMaxScaleFactor(configs, activeLayer);
-    }
+      if (activeLayer.interaction.enableScale) {
+        activeLayer.scale = baseScaleFactor[activeLayer.id]! *
+            calculateScale(
+              _rotateScaleButtonStartPosition!,
+              touchPositionFromLayerCenter,
+            );
+        _setMinMaxScaleFactor(configs, activeLayer);
+      }
 
-    if (activeLayer.interaction.enableRotate) {
-      activeLayer.rotation = baseAngleFactor +
-          calculateRotation(
-            _rotateScaleButtonStartPosition!,
-            touchPositionFromLayerCenter,
-          );
+      if (activeLayer.interaction.enableRotate) {
+        activeLayer.rotation = baseAngleFactor[activeLayer.id]! +
+            calculateRotation(
+              _rotateScaleButtonStartPosition!,
+              touchPositionFromLayerCenter,
+            );
 
-      if (editorScaleFactor != 1) return;
-      checkRotationLine(
-        activeLayer: activeLayer,
-        editorSize: editorSize,
-      );
+        if (editorScaleFactor != 1) continue;
+        checkRotationLine(
+          activeLayer: activeLayer,
+          editorSize: editorSize,
+        );
+      }
     }
   }
 
@@ -270,93 +273,102 @@ class LayerInteractionManager {
     required double editorScaleFactor,
     required BuildContext context,
     required ScaleUpdateDetails detail,
-    required Layer activeLayer,
+    required List<Layer> activeLayers,
     required GlobalKey removeAreaKey,
     required Function(bool) onHoveredRemoveChanged,
   }) {
-    if (_activeScale || !activeLayer.interaction.enableMove) return;
-
-    RenderBox? box =
-        removeAreaKey.currentContext?.findRenderObject() as RenderBox?;
-    if (box != null) {
-      Offset position = box.localToGlobal(Offset.zero);
-      bool hit = Rect.fromLTWH(
-        position.dx,
-        position.dy,
-        box.size.width,
-        box.size.height,
-      ).contains(detail.focalPoint);
-      if (hoverRemoveBtn != hit) {
-        hoverRemoveBtn = hit;
-        onHoveredRemoveChanged.call(hoverRemoveBtn);
-      }
+    if (_activeScale ||
+        activeLayers.any((layer) => !layer.interaction.enableMove)) {
+      return;
     }
 
-    activeLayer.offset = Offset(
-      activeLayer.offset.dx + detail.focalPointDelta.dx / editorScaleFactor,
-      activeLayer.offset.dy + detail.focalPointDelta.dy / editorScaleFactor,
-    );
-
-    if (editorScaleFactor > 1) return;
-
-    bool hasLineHit = false;
-    double posX = activeLayer.offset.dx;
-    double posY = activeLayer.offset.dy;
-
-    bool hitAreaX = detail.focalPoint.dx >= snapStartPosX - hitSpan &&
-        detail.focalPoint.dx <= snapStartPosX + hitSpan;
-    bool hitAreaY = detail.focalPoint.dy >= snapStartPosY - hitSpan &&
-        detail.focalPoint.dy <= snapStartPosY + hitSpan;
-
-    bool helperGoNearLineLeft =
-        posX >= 0 && lastPositionX == LayerLastPosition.left;
-    bool helperGoNearLineRight =
-        posX <= 0 && lastPositionX == LayerLastPosition.right;
-    bool helperGoNearLineTop =
-        posY >= 0 && lastPositionY == LayerLastPosition.top;
-    bool helperGoNearLineBottom =
-        posY <= 0 && lastPositionY == LayerLastPosition.bottom;
-
-    /// Calc vertical helper line
-    if ((!showVerticalHelperLine &&
-            (helperGoNearLineLeft || helperGoNearLineRight)) ||
-        (showVerticalHelperLine && hitAreaX)) {
-      if (!showVerticalHelperLine) {
-        hasLineHit = true;
-        snapStartPosX = detail.focalPoint.dx;
+    for (var activeLayer in activeLayers) {
+      RenderBox? box =
+          removeAreaKey.currentContext?.findRenderObject() as RenderBox?;
+      if (box != null) {
+        Offset position = box.localToGlobal(Offset.zero);
+        bool hit = Rect.fromLTWH(
+          position.dx,
+          position.dy,
+          box.size.width,
+          box.size.height,
+        ).contains(detail.focalPoint);
+        if (hoverRemoveBtn != hit) {
+          hoverRemoveBtn = hit;
+          onHoveredRemoveChanged.call(hoverRemoveBtn);
+        }
       }
-      showVerticalHelperLine = true;
-      activeLayer.offset = Offset(0, activeLayer.offset.dy);
-      lastPositionX = LayerLastPosition.center;
-    } else {
-      showVerticalHelperLine = false;
-      lastPositionX =
-          posX <= 0 ? LayerLastPosition.left : LayerLastPosition.right;
-    }
 
-    /// Calc horizontal helper line
-    if ((!showHorizontalHelperLine &&
-            (helperGoNearLineTop || helperGoNearLineBottom)) ||
-        (showHorizontalHelperLine && hitAreaY)) {
-      if (!showHorizontalHelperLine) {
-        hasLineHit = true;
-        snapStartPosY = detail.focalPoint.dy;
-      }
-      showHorizontalHelperLine = true;
-      activeLayer.offset = Offset(activeLayer.offset.dx, 0);
-      lastPositionY = LayerLastPosition.center;
-    } else {
-      showHorizontalHelperLine = false;
-      lastPositionY =
-          posY <= 0 ? LayerLastPosition.top : LayerLastPosition.bottom;
-    }
+      activeLayer.offset = Offset(
+        activeLayer.offset.dx + detail.focalPointDelta.dx / editorScaleFactor,
+        activeLayer.offset.dy + detail.focalPointDelta.dy / editorScaleFactor,
+      );
 
-    if (hasLineHit) {
-      if (showHorizontalHelperLine) {
-        helperLinesCallbacks?.handleHorizontalLineHit();
+      if (editorScaleFactor > 1) continue;
+
+      bool hasLineHit = false;
+      double posX = activeLayer.offset.dx;
+      double posY = activeLayer.offset.dy;
+
+      bool hitAreaX = detail.focalPoint.dx >=
+              (snapStartPosX[activeLayer.id] ?? 0) - hitSpan &&
+          detail.focalPoint.dx <=
+              (snapStartPosX[activeLayer.id] ?? 0) + hitSpan;
+      bool hitAreaY = detail.focalPoint.dy >=
+              (snapStartPosY[activeLayer.id] ?? 0) - hitSpan &&
+          detail.focalPoint.dy <=
+              (snapStartPosY[activeLayer.id] ?? 0) + hitSpan;
+
+      bool helperGoNearLineLeft =
+          posX >= 0 && lastPositionX[activeLayer.id] == LayerLastPosition.left;
+      bool helperGoNearLineRight =
+          posX <= 0 && lastPositionX[activeLayer.id] == LayerLastPosition.right;
+      bool helperGoNearLineTop =
+          posY >= 0 && lastPositionY[activeLayer.id] == LayerLastPosition.top;
+      bool helperGoNearLineBottom = posY <= 0 &&
+          lastPositionY[activeLayer.id] == LayerLastPosition.bottom;
+
+      /// Calc vertical helper line
+      if ((!showVerticalHelperLine &&
+              (helperGoNearLineLeft || helperGoNearLineRight)) ||
+          (showVerticalHelperLine && hitAreaX)) {
+        if (!showVerticalHelperLine) {
+          hasLineHit = true;
+          snapStartPosX[activeLayer.id] = detail.focalPoint.dx;
+        }
+        showVerticalHelperLine = true;
+        activeLayer.offset = Offset(0, activeLayer.offset.dy);
+        lastPositionX[activeLayer.id] = LayerLastPosition.center;
+      } else {
+        showVerticalHelperLine = false;
+        lastPositionX[activeLayer.id] =
+            posX <= 0 ? LayerLastPosition.left : LayerLastPosition.right;
       }
-      if (showVerticalHelperLine) {
-        helperLinesCallbacks?.handleVerticalLineHit();
+
+      /// Calc horizontal helper line
+      if ((!showHorizontalHelperLine &&
+              (helperGoNearLineTop || helperGoNearLineBottom)) ||
+          (showHorizontalHelperLine && hitAreaY)) {
+        if (!showHorizontalHelperLine) {
+          hasLineHit = true;
+          snapStartPosY[activeLayer.id] = detail.focalPoint.dy;
+        }
+        showHorizontalHelperLine = true;
+        activeLayer.offset = Offset(activeLayer.offset.dx, 0);
+        lastPositionY[activeLayer.id] = LayerLastPosition.center;
+      } else {
+        showHorizontalHelperLine = false;
+        lastPositionY[activeLayer.id] =
+            posY <= 0 ? LayerLastPosition.top : LayerLastPosition.bottom;
+      }
+
+      if (hasLineHit) {
+        if (showHorizontalHelperLine) {
+          helperLinesCallbacks?.handleHorizontalLineHit();
+        }
+        if (showVerticalHelperLine) {
+          helperLinesCallbacks?.handleVerticalLineHit();
+        }
       }
     }
   }
@@ -366,27 +378,29 @@ class LayerInteractionManager {
     required double editorScaleFactor,
     required ProImageEditorConfigs configs,
     required ScaleUpdateDetails detail,
-    required Layer activeLayer,
+    required List<Layer> activeLayers,
     required Size editorSize,
     required EdgeInsets screenPaddingHelper,
   }) {
     _activeScale = true;
 
-    if (activeLayer.interaction.enableScale) {
-      activeLayer.scale = baseScaleFactor * detail.scale;
-      _setMinMaxScaleFactor(configs, activeLayer);
-    }
-    if (activeLayer.interaction.enableRotate) {
-      activeLayer.rotation = baseAngleFactor + detail.rotation;
+    for (var activeLayer in activeLayers) {
+      if (activeLayer.interaction.enableScale) {
+        activeLayer.scale = baseScaleFactor[activeLayer.id]! * detail.scale;
+        _setMinMaxScaleFactor(configs, activeLayer);
+      }
+      if (activeLayer.interaction.enableRotate) {
+        activeLayer.rotation =
+            baseAngleFactor[activeLayer.id]! + detail.rotation;
 
-      if (editorScaleFactor == 1) {
-        checkRotationLine(
-          activeLayer: activeLayer,
-          editorSize: editorSize,
-        );
+        if (editorScaleFactor == 1) {
+          checkRotationLine(
+            activeLayer: activeLayer,
+            editorSize: editorSize,
+          );
+        }
       }
     }
-
     scaleDebounce(() => _activeScale = false);
   }
 
@@ -396,21 +410,23 @@ class LayerInteractionManager {
     required Layer activeLayer,
     required Size editorSize,
   }) {
-    double rotation = activeLayer.rotation - baseAngleFactor;
+    double rotation = activeLayer.rotation - baseAngleFactor[activeLayer.id]!;
     double hitSpanX = hitSpan / 2;
     double deg = activeLayer.rotation * 180 / pi;
     double degChange = rotation * 180 / pi;
-    double degHit = (snapStartRotation + degChange) % 45;
+    double degHit = (snapStartRotation[activeLayer.id]! + degChange) % 45;
 
     bool hitAreaBelow = degHit <= hitSpanX;
     bool hitAreaAfter = degHit >= 45 - hitSpanX;
     bool hitArea = hitAreaBelow || hitAreaAfter;
 
     if ((!showRotationHelperLine &&
-            ((degHit > 0 && degHit <= hitSpanX && snapLastRotation < deg) ||
+            ((degHit > 0 &&
+                    degHit <= hitSpanX &&
+                    snapLastRotation[activeLayer.id]! < deg) ||
                 (degHit < 45 &&
                     degHit >= 45 - hitSpanX &&
-                    snapLastRotation > deg))) ||
+                    snapLastRotation[activeLayer.id]! > deg))) ||
         (showRotationHelperLine && hitArea)) {
       if (_rotationStartedHelper) {
         activeLayer.rotation =
@@ -427,7 +443,7 @@ class LayerInteractionManager {
         }
         showRotationHelperLine = true;
       }
-      snapLastRotation = deg;
+      snapLastRotation[activeLayer.id] = deg;
     } else {
       showRotationHelperLine = false;
       _rotationStartedHelper = true;

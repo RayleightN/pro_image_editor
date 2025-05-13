@@ -34,19 +34,19 @@ class WhatsAppHelper {
     /// Blocks further updates if the filter show helper is active.
     editor.blockOnScaleUpdateFunction = filterShowHelper > 0;
 
-    if (editor.selectedLayerIndex < 0) {
+    if (editor.activeLayers.isEmpty) {
       /// Adjusts filter helper based on vertical focal point changes.
       filterShowHelper -= details.focalPointDelta.dy;
       filterShowHelper = max(0, min(120, filterShowHelper));
 
       /// Determines swipe direction based on pointer offset.
-      double pointerOffset =
-          editor.layerInteractionManager.snapStartPosY - details.focalPoint.dy;
-      if (pointerOffset > 20) {
-        _swipeDirection = SwipeMode.up;
-      } else if (pointerOffset < -20) {
-        _swipeDirection = SwipeMode.down;
-      }
+      // double pointerOffset =
+      //     editor.layerInteractionManager.snapStartPosY - details.focalPoint.dy;
+      // if (pointerOffset > 20) {
+      //   _swipeDirection = SwipeMode.up;
+      // } else if (pointerOffset < -20) {
+      //   _swipeDirection = SwipeMode.down;
+      // }
     }
 
     /// Triggers a state update to refresh the UI.
@@ -55,7 +55,7 @@ class WhatsAppHelper {
 
   /// Called when a scaling gesture ends, handling swipe and filter animations.
   void onScaleEnd(ScaleEndDetails details, ProImageEditorState editor) {
-    if (editor.selectedLayerIndex < 0) {
+    if (editor.activeLayers.isEmpty) {
       /// Hides helper lines after scaling ends.
       editor.layerInteractionManager.showHelperLines = false;
 

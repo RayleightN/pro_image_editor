@@ -1,6 +1,5 @@
 // Flutter imports:
 import 'package:flutter/material.dart';
-
 // Package imports:
 import 'package:pro_image_editor/pro_image_editor.dart';
 
@@ -70,29 +69,30 @@ class _ZoomExampleState extends State<ZoomExample>
                 return [
                   ReactiveWidget(
                     stream: rebuildStream,
-                    builder: (_) =>
-                        editor.selectedLayerIndex >= 0 || editor.isSubEditorOpen
-                            ? const SizedBox.shrink()
-                            : Positioned(
-                                bottom: 20,
-                                left: 0,
-                                child: Container(
-                                  decoration: BoxDecoration(
-                                    color: Colors.blue.shade700,
-                                    borderRadius: const BorderRadius.only(
-                                      topRight: Radius.circular(100),
-                                      bottomRight: Radius.circular(100),
-                                    ),
-                                  ),
-                                  child: IconButton(
-                                    onPressed: editor.resetZoom,
-                                    icon: const Icon(
-                                      Icons.zoom_out_map_rounded,
-                                      color: Colors.white,
-                                    ),
-                                  ),
+                    builder: (_) => editor.layerInteractionManager
+                                .selectedLayerIds.isNotEmpty ||
+                            editor.isSubEditorOpen
+                        ? const SizedBox.shrink()
+                        : Positioned(
+                            bottom: 20,
+                            left: 0,
+                            child: Container(
+                              decoration: BoxDecoration(
+                                color: Colors.blue.shade700,
+                                borderRadius: const BorderRadius.only(
+                                  topRight: Radius.circular(100),
+                                  bottomRight: Radius.circular(100),
                                 ),
                               ),
+                              child: IconButton(
+                                onPressed: editor.resetZoom,
+                                icon: const Icon(
+                                  Icons.zoom_out_map_rounded,
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ),
+                          ),
                   ),
                 ];
               },

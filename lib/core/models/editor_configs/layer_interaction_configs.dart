@@ -24,6 +24,7 @@ class LayerInteractionConfigs {
   /// ```
   const LayerInteractionConfigs({
     this.selectable = LayerInteractionSelectable.auto,
+    this.selectionMode = LayerInteractionSelectionMode.single,
     this.initialSelected = false,
     this.hideToolbarOnInteraction = false,
     this.hideVideoControlsOnInteraction = true,
@@ -37,6 +38,11 @@ class LayerInteractionConfigs {
   ///
   /// Defaults to [LayerInteractionSelectable.auto].
   final LayerInteractionSelectable selectable;
+
+  /// Specifies the selection mode for the layer.
+  ///
+  /// Defaults to [LayerInteractionSelectionMode.single].
+  final LayerInteractionSelectionMode selectionMode;
 
   /// The layer is automatically selected upon creation.
   /// This option takes effect only when `selectable` is set to `enabled` or
@@ -109,4 +115,13 @@ enum LayerInteractionSelectable {
 
   /// Indicates that the layer is not selectable.
   disabled,
+}
+
+/// Enumerates the different selectability states for a layer.
+enum LayerInteractionSelectionMode {
+  /// Indicates that only a single layer can be selected at a time.
+  single,
+
+  /// Indicates that multiple layers can be selected at the same time.
+  multiple,
 }

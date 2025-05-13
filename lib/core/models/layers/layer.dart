@@ -1,6 +1,7 @@
 // Flutter imports:
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:pro_image_editor/core/models/layers/group_layer.dart';
 
 import '/shared/extensions/box_constraints_extension.dart';
 import '/shared/services/import_export/types/widget_loader.dart';
@@ -118,6 +119,9 @@ class Layer {
           requirePrecache: requirePrecache,
           keyConverter: keyConverter,
         );
+      case 'group':
+        // Returns a GroupLayer instance when type is 'group'.
+        return GroupLayer.fromMap(layer, map, keyConverter: keyConverter);
       default:
         // Returns the base Layer instance when type is unrecognized.
         return layer;

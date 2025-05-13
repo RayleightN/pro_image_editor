@@ -262,7 +262,7 @@ class _FrostedGlassExampleState extends State<FrostedGlassExample>
     Stream<dynamic> rebuildStream,
   ) {
     return [
-      if (editor.selectedLayerIndex < 0)
+      if (editor.layerInteractionManager.selectedLayerIds.isEmpty)
         ReactiveWidget(
           stream: rebuildStream,
           builder: (_) => FrostedGlassActionBar(

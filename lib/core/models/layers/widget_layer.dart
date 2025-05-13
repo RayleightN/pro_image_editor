@@ -174,6 +174,7 @@ class WidgetLayer extends Layer {
     bool? flipX,
     bool? flipY,
     LayerInteraction? interaction,
+    bool? insideGroup,
   }) {
     return WidgetLayer(
       widget: widget ?? this.widget,

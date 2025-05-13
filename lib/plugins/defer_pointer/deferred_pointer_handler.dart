@@ -11,12 +11,12 @@ class DeferredPointerHandler extends StatefulWidget {
     required this.child,
     this.link,
     this.id,
-    this.selectedLayerId,
+    this.selectedLayerIds,
   });
   final Widget child;
   final DeferredPointerHandlerLink? link;
   final String? id;
-  final String? selectedLayerId;
+  final List<String>? selectedLayerIds;
 
   @override
   DeferredPointerHandlerState createState() => DeferredPointerHandlerState();
@@ -65,7 +65,7 @@ class DeferredPointerHandlerState extends State<DeferredPointerHandler> {
   Widget build(BuildContext context) {
     return DeferManager(
       id: _id,
-      selectedLayerId: widget.selectedLayerId ?? '',
+      selectedLayerIds: widget.selectedLayerIds ?? [],
       child: _InheritedDeferredPaintSurface(
         state: this,
         child: _DeferredHitTargetRenderObjectWidget(
@@ -165,10 +165,10 @@ class DeferManager extends InheritedWidget {
     super.key,
     required super.child,
     required this.id,
-    this.selectedLayerId = '',
+    this.selectedLayerIds = const [],
   });
 
-  final String selectedLayerId;
+  final List<String> selectedLayerIds;
   final String id;
 
   static DeferManager? maybeOf(BuildContext context) {
@@ -183,5 +183,8 @@ class DeferManager extends InheritedWidget {
 
   @override
   bool updateShouldNotify(DeferManager oldWidget) =>
-      id != oldWidget.id || selectedLayerId != oldWidget.selectedLayerId;
+      id != oldWidget.id ||
+      selectedLayerIds != oldWidget.selectedLayerIds ||
+      selectedLayerIds.length != oldWidget.selectedLayerIds.length ||
+      selectedLayerIds.any((e) => !oldWidget.selectedLayerIds.contains(e));
 }

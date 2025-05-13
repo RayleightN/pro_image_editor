@@ -6,6 +6,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:pro_image_editor/core/models/complete_parameters.dart';
+import 'package:pro_image_editor/core/models/layers/group_layer.dart';
 
 import '/core/mixins/converted_configs.dart';
 import '/core/mixins/editor_callbacks_mixin.dart';
@@ -403,10 +404,10 @@ class ProImageEditorState extends State<ProImageEditor>
   late ThemeData _theme;
 
   /// Temporary layer used during editing.
-  Layer? _tempLayer;
+  final List<Layer> _tempLayers = [];
 
   /// Index of the selected layer.
-  int selectedLayerIndex = -1;
+  // List<int> selectedLayerIndexes = [];
 
   /// Flag indicating if the editor has been initialized.
   bool _isInitialized = false;
@@ -446,10 +447,17 @@ class ProImageEditorState extends State<ProImageEditor>
   bool _isVideoPlayerReady = true;
 
   /// Getter for the active layer currently being edited.
-  Layer? get _activeLayer =>
-      activeLayers.length > selectedLayerIndex && selectedLayerIndex >= 0
-          ? activeLayers[selectedLayerIndex]
-          : null;
+  List<Layer> get _activeLayers =>
+      activeLayers.length >= layerInteractionManager.selectedLayerIds.length &&
+              layerInteractionManager.selectedLayerIds.isNotEmpty
+          ? layerInteractionManager.selectedLayerIds
+              .map((i) => activeLayers.firstWhere((layer) => layer.id == i))
+              .toList()
+          : [];
+  // activeLayers.length >= selectedLayerIndexes.length &&
+  //         selectedLayerIndexes.isNotEmpty
+  //     ? selectedLayerIndexes.map((i) => activeLayers[i]).toList()
+  //     : [];
 
   /// Get the list of layers from the current image editor changes.
   List<Layer> get activeLayers => stateManager.activeLayers;
@@ -480,6 +488,8 @@ class ProImageEditorState extends State<ProImageEditor>
   /// The completer is initialized and can be used to await the image
   /// decoding operation.
   final Completer<bool> _decodeImageCompleter = Completer();
+
+  Rect _selectionRect = Rect.zero;
 
   @override
   void initState() {
@@ -551,7 +561,8 @@ class ProImageEditorState extends State<ProImageEditor>
 
   void _checkInteractiveViewer() {
     interactiveViewer.currentState?.setEnableInteraction(
-      selectedLayerIndex < 0 && layerInteractionManager.selectedLayerId.isEmpty,
+      // selectedLayerIndexes.isEmpty &&
+      layerInteractionManager.selectedLayerIds.isEmpty,
     );
   }
 
@@ -559,7 +570,7 @@ class ProImageEditorState extends State<ProImageEditor>
   bool _onKeyEvent(KeyEvent event) {
     return _desktopInteractionManager.onKey(
       event,
-      activeLayer: _activeLayer,
+      activeLayers: _activeLayers,
       onEscape: () {
         if (!_isDialogOpen && !_isContextMenuOpen) {
           if (isSubEditorOpen) {
@@ -659,7 +670,7 @@ class ProImageEditorState extends State<ProImageEditor>
   ///
   /// This method updates the current layer at the given [index] in the list of
   /// active layers with the specified [layer]. It also resets the
-  /// `selectedLayerId` in the `layerInteractionManager` to an empty string,
+  /// `selectedLayerIds` in the `layerInteractionManager` to an empty list,
   /// effectively deselecting any currently selected layer. Additionally, it
   /// adds the updated list of layers to the history, enabling undo/redo
   /// functionality, and triggers a UI update by sending a null event to the
@@ -682,7 +693,7 @@ class ProImageEditorState extends State<ProImageEditor>
     required int index,
     required Layer layer,
   }) {
-    layerInteractionManager.selectedLayerId = '';
+    layerInteractionManager.selectedLayerIds.clear();
     addHistory(
       layers: [...activeLayers]
         ..removeAt(index)
@@ -702,7 +713,7 @@ class ProImageEditorState extends State<ProImageEditor>
     bool blockSelectLayer = false,
     bool blockCaptureScreenshot = false,
   }) {
-    layerInteractionManager.selectedLayerId = '';
+    layerInteractionManager.selectedLayerIds.clear();
 
     addHistory(newLayer: layer, blockCaptureScreenshot: blockCaptureScreenshot);
 
@@ -715,7 +726,7 @@ class ProImageEditorState extends State<ProImageEditor>
       /// Skip one frame to ensure captured image in separate thread will not
       /// capture the border.
       WidgetsBinding.instance.addPostFrameCallback((_) async {
-        layerInteractionManager.selectedLayerId = layer.id;
+        layerInteractionManager.selectedLayerIds.add(layer.id);
         _controllers.uiLayerCtrl.add(null);
         _checkInteractiveViewer();
       });
@@ -727,21 +738,42 @@ class ProImageEditorState extends State<ProImageEditor>
   /// Remove a layer from the editor.
   ///
   /// This method removes a layer from the editor and updates the editing state.
-  void removeLayer(Layer? layer) {
-    int layerPos = activeLayers
-        .indexWhere((element) => element.id == (layer?.id ?? _tempLayer!.id));
+  void removeLayer(Layer layer) {
+    final layerPos = activeLayers.indexWhere((l) => l.id == layer.id);
     if (layerPos >= 0) {
-      stateManager.activeLayers[layerPos] =
-          _layerCopyManager.copyLayer(_tempLayer ?? layer!);
+      stateManager.activeLayers[layerPos] = _layerCopyManager.copyLayer(layer);
 
       mainEditorCallbacks
           ?.handleRemoveLayer(stateManager.activeLayers[layerPos]);
 
-      var layers = _layerCopyManager.copyLayerList(activeLayers)
+      final layers = _layerCopyManager.copyLayerList(activeLayers)
         ..removeAt(layerPos);
+
       addHistory(layers: layers);
       setState(() {});
     }
+  }
+
+  /// Remove a list of layers from the editor.
+  ///
+  /// This method removes a list of layers from the editor and updates the
+  /// editing state.
+  void removeLayers(List<Layer> layers) {
+    final newLayers = _layerCopyManager.copyLayerList(activeLayers);
+    for (final layer in layers) {
+      final layerPos = newLayers.indexWhere((l) => l.id == layer.id);
+      if (layerPos >= 0) {
+        stateManager.activeLayers[layerPos] =
+            _layerCopyManager.copyLayer(layer);
+
+        mainEditorCallbacks
+            ?.handleRemoveLayer(stateManager.activeLayers[layerPos]);
+        newLayers.removeAt(layerPos);
+      }
+    }
+
+    addHistory(layers: newLayers);
+    setState(() {});
   }
 
   /// Remove all layers from the editor.
@@ -759,7 +791,7 @@ class ProImageEditorState extends State<ProImageEditor>
   /// editing state.
   void _updateTempLayer() {
     addHistory();
-    layerInteractionManager.selectedLayerId = '';
+    layerInteractionManager.selectedLayerIds.clear();
     _checkInteractiveViewer();
     _controllers.uiLayerCtrl.add(null);
 
@@ -779,12 +811,15 @@ class ProImageEditorState extends State<ProImageEditor>
 
     List<Layer> oldLayers =
         stateHistory[stateManager.historyPointer - 1].layers;
-    int oldIndex =
-        oldLayers.indexWhere((element) => element.id == _tempLayer!.id);
-    if (oldIndex >= 0) {
-      oldLayers[oldIndex] = _layerCopyManager.copyLayer(_tempLayer!);
+    for (var tempLayer in _tempLayers) {
+      int oldIndex =
+          oldLayers.indexWhere((element) => element.id == tempLayer.id);
+      if (oldIndex >= 0) {
+        oldLayers[oldIndex] = _layerCopyManager.copyLayer(tempLayer);
+      }
     }
-    _tempLayer = null;
+
+    _tempLayers.clear();
   }
 
   void _initializeVideoEditor() async {
@@ -919,8 +954,8 @@ class ProImageEditorState extends State<ProImageEditor>
   }
 
   /// Set the temporary layer to a copy of the provided layer.
-  void _setTempLayer(Layer layer) {
-    _tempLayer = _layerCopyManager.copyLayer(layer);
+  void _addTempLayer(Layer layer) {
+    _tempLayers.add(_layerCopyManager.copyLayer(layer));
   }
 
   void _calcAppBarHeight() {
@@ -991,40 +1026,50 @@ class ProImageEditorState extends State<ProImageEditor>
     }
 
     layerInteractionManager
-      ..snapStartPosX = details.focalPoint.dx
-      ..snapStartPosY = details.focalPoint.dy;
+      ..snapStartPosX = {
+        for (var id in layerInteractionManager.selectedLayerIds)
+          id: details.focalPoint.dx
+      }
+      ..snapStartPosY = {
+        for (var id in layerInteractionManager.selectedLayerIds)
+          id: details.focalPoint.dy
+      };
 
-    if (selectedLayerIndex < 0) return;
+    // if (selectedLayerIndexes.isEmpty) return;
 
-    var layer = activeLayers[selectedLayerIndex];
+    // for (var selectedLayerIndex in selectedLayerIndexes) {
+    for (var selectedLayerIndex in layerInteractionManager.selectedLayerIds) {
+      var layer = activeLayers.firstWhere((l) => l.id == selectedLayerIndex);
 
-    if (layerInteractionManager.selectedLayerId != layer.id) {
-      layerInteractionManager.selectedLayerId = '';
-      _checkInteractiveViewer();
+      if (!layerInteractionManager.selectedLayerIds.contains(layer.id)) {
+        layerInteractionManager.selectedLayerIds.clear();
+        _checkInteractiveViewer();
+      }
+
+      _addTempLayer(layer);
+      layerInteractionManager
+        ..baseScaleFactor[layer.id] = layer.scale
+        ..baseAngleFactor[layer.id] = layer.rotation
+        ..snapStartRotation[layer.id] = layer.rotation * 180 / pi
+        ..snapLastRotation = layerInteractionManager.snapStartRotation
+        ..reset();
+
+      double posX = layer.offset.dx;
+      double posY = layer.offset.dy;
+
+      layerInteractionManager
+        ..lastPositionY[layer.id] = posY <= -layerInteractionManager.hitSpan
+            ? LayerLastPosition.top
+            : posY >= layerInteractionManager.hitSpan
+                ? LayerLastPosition.bottom
+                : LayerLastPosition.center
+        ..lastPositionX[layer.id] = posX <= -layerInteractionManager.hitSpan
+            ? LayerLastPosition.left
+            : posX >= layerInteractionManager.hitSpan
+                ? LayerLastPosition.right
+                : LayerLastPosition.center;
     }
 
-    _setTempLayer(layer);
-    layerInteractionManager
-      ..baseScaleFactor = layer.scale
-      ..baseAngleFactor = layer.rotation
-      ..snapStartRotation = layer.rotation * 180 / pi
-      ..snapLastRotation = layerInteractionManager.snapStartRotation
-      ..reset();
-
-    double posX = layer.offset.dx;
-    double posY = layer.offset.dy;
-
-    layerInteractionManager
-      ..lastPositionY = posY <= -layerInteractionManager.hitSpan
-          ? LayerLastPosition.top
-          : posY >= layerInteractionManager.hitSpan
-              ? LayerLastPosition.bottom
-              : LayerLastPosition.center
-      ..lastPositionX = posX <= -layerInteractionManager.hitSpan
-          ? LayerLastPosition.left
-          : posX >= layerInteractionManager.hitSpan
-              ? LayerLastPosition.right
-              : LayerLastPosition.center;
     setState(() {});
     mainEditorCallbacks?.handleScaleStart(details);
   }
@@ -1035,7 +1080,11 @@ class ProImageEditorState extends State<ProImageEditor>
   /// layer's position and properties.
   void _onScaleUpdate(ScaleUpdateDetails details) {
     mainEditorCallbacks?.handleScaleUpdate(details);
-    if (selectedLayerIndex < 0 || blockOnScaleUpdateFunction) return;
+    // if (selectedLayerIndexes.isEmpty || blockOnScaleUpdateFunction) return;
+    if (layerInteractionManager.selectedLayerIds.isEmpty ||
+        blockOnScaleUpdateFunction) {
+      return;
+    }
 
     bool beforeShowHorizontalHelperLine =
         layerInteractionManager.showHorizontalHelperLine;
@@ -1055,7 +1104,7 @@ class ProImageEditorState extends State<ProImageEditor>
       }
     }
 
-    if (_activeLayer == null) return;
+    if (_activeLayers.isEmpty) return;
 
     if (layerInteractionManager.rotateScaleLayerSizeHelper != null) {
       layerInteractionManager
@@ -1064,7 +1113,7 @@ class ProImageEditorState extends State<ProImageEditor>
                 !isDesktop
         ..calculateInteractiveButtonScaleRotate(
           configs: configs,
-          activeLayer: _activeLayer!,
+          activeLayers: _activeLayers,
           details: details,
           editorSize: sizesManager.bodySize,
           layerTheme: layerInteraction.style,
@@ -1072,7 +1121,9 @@ class ProImageEditorState extends State<ProImageEditor>
           editorScaleOffset:
               interactiveViewer.currentState?.offset ?? Offset.zero,
         );
-      _activeLayer!.key.currentState!.setState(() {});
+      for (var layer in _activeLayers) {
+        layer.key.currentState?.setState(() {});
+      }
       checkUpdateHelperLineUI();
       return;
     }
@@ -1089,7 +1140,7 @@ class ProImageEditorState extends State<ProImageEditor>
         ..calculateMovement(
           editorScaleFactor: editorScaleFactor,
           removeAreaKey: _removeAreaKey,
-          activeLayer: _activeLayer!,
+          activeLayers: _activeLayers,
           context: context,
           detail: details,
           onHoveredRemoveChanged: _controllers.removeBtnCtrl.add,
@@ -1102,14 +1153,16 @@ class ProImageEditorState extends State<ProImageEditor>
         ..calculateScaleRotate(
           editorScaleFactor: editorScaleFactor,
           configs: configs,
-          activeLayer: _activeLayer!,
+          activeLayers: _activeLayers,
           detail: details,
           editorSize: sizesManager.bodySize,
           screenPaddingHelper: sizesManager.imageMargin,
         );
     }
-    mainEditorCallbacks?.handleUpdateLayer(_activeLayer!);
-    _activeLayer?.key.currentState?.setState(() {});
+    mainEditorCallbacks?.handleUpdateLayer(_activeLayers);
+    for (var layer in _activeLayers) {
+      layer.key.currentState?.setState(() {});
+    }
     checkUpdateHelperLineUI();
   }
 
@@ -1120,7 +1173,7 @@ class ProImageEditorState extends State<ProImageEditor>
   void _onScaleEnd(ScaleEndDetails details) async {
     mainEditorCallbacks?.handleScaleEnd(details);
 
-    if (!layerInteractionManager.hoverRemoveBtn && _tempLayer != null) {
+    if (!layerInteractionManager.hoverRemoveBtn && _tempLayers.isNotEmpty) {
       _updateTempLayer();
     }
 
@@ -1157,7 +1210,7 @@ class ProImageEditorState extends State<ProImageEditor>
 
     int i = activeLayers.indexWhere((element) => element.id == layerData.id);
     if (i >= 0) {
-      _setTempLayer(layerData);
+      _addTempLayer(layerData);
       (activeLayers[i] as TextLayer)
         ..text = layer.text
         ..background = layer.background
@@ -1202,7 +1255,7 @@ class ProImageEditorState extends State<ProImageEditor>
       Future.delayed(const Duration(milliseconds: 1), () async {
         if (isSubEditorOpen) await _pageOpenCompleter.future;
         WidgetsBinding.instance.addPostFrameCallback((_) async {
-          layerInteractionManager.selectedLayerId = id;
+          layerInteractionManager.selectedLayerIds.add(id);
           _checkInteractiveViewer();
           setState(() {});
         });
@@ -1217,7 +1270,7 @@ class ProImageEditorState extends State<ProImageEditor>
     Widget page, {
     Duration duration = const Duration(milliseconds: 300),
   }) {
-    layerInteractionManager.selectedLayerId = '';
+    layerInteractionManager.selectedLayerIds.clear();
     _checkInteractiveViewer();
     isSubEditorOpen = true;
 
@@ -1625,7 +1678,7 @@ class ProImageEditorState extends State<ProImageEditor>
   /// active and restored
   /// after its closure.
   void openEmojiEditor() async {
-    setState(() => layerInteractionManager.selectedLayerId = '');
+    setState(() => layerInteractionManager.selectedLayerIds.clear());
     _checkInteractiveViewer();
     ServicesBinding.instance.keyboard.removeHandler(_onKeyEvent);
     final effectiveBoxConstraints = emojiEditorConfigs
@@ -1680,7 +1733,7 @@ class ProImageEditorState extends State<ProImageEditor>
 
   /// Opens the sticker editor as a modal bottom sheet.
   void openStickerEditor() async {
-    setState(() => layerInteractionManager.selectedLayerId = '');
+    setState(() => layerInteractionManager.selectedLayerIds.clear());
     _checkInteractiveViewer();
     ServicesBinding.instance.keyboard.removeHandler(_onKeyEvent);
     final effectiveBoxConstraints = stickerEditorConfigs
@@ -1723,7 +1776,7 @@ class ProImageEditorState extends State<ProImageEditor>
 
   /// add custom layer to the editor.
   void onAddCustomLayer(WidgetLayer layer) async {
-    setState(() => layerInteractionManager.selectedLayerId = '');
+    setState(() => layerInteractionManager.selectedLayerIds.clear());
     _checkInteractiveViewer();
     ServicesBinding.instance.keyboard.removeHandler(_onKeyEvent);
     ServicesBinding.instance.keyboard.addHandler(_onKeyEvent);
@@ -1764,7 +1817,7 @@ class ProImageEditorState extends State<ProImageEditor>
   void undoAction() {
     if (stateManager.canUndo) {
       setState(() {
-        layerInteractionManager.selectedLayerId = '';
+        layerInteractionManager.selectedLayerIds.clear();
         _checkInteractiveViewer();
         stateManager.undo();
         decodeImage();
@@ -1783,7 +1836,7 @@ class ProImageEditorState extends State<ProImageEditor>
   void redoAction() {
     if (stateManager.canRedo) {
       setState(() {
-        layerInteractionManager.selectedLayerId = '';
+        layerInteractionManager.selectedLayerIds.clear();
         _checkInteractiveViewer();
         stateManager.redo();
         decodeImage();
@@ -1842,7 +1895,7 @@ class ProImageEditorState extends State<ProImageEditor>
     /// a correct image.
     setState(() {
       _isProcessingFinalImage = true;
-      layerInteractionManager.selectedLayerId = '';
+      layerInteractionManager.selectedLayerIds.clear();
       _checkInteractiveViewer();
     });
 
@@ -2137,8 +2190,8 @@ class ProImageEditorState extends State<ProImageEditor>
   /// - Clearing the selected layer ID in the [layerInteractionManager]
   /// - Notifying listeners via [_controllers.uiLayerCtrl]
   void clearLayerSelection() {
-    selectedLayerIndex = -1;
-    layerInteractionManager.selectedLayerId = '';
+    // selectedLayerIndexes.clear();
+    layerInteractionManager.selectedLayerIds.clear();
     _controllers.uiLayerCtrl.add(null);
   }
 
@@ -2158,7 +2211,7 @@ class ProImageEditorState extends State<ProImageEditor>
 
     var layer = activeLayers[index];
 
-    layerInteractionManager.selectedLayerId = layer.id;
+    layerInteractionManager.selectedLayerIds.add(layer.id);
     _controllers.uiLayerCtrl.add(null);
 
     return activeLayers[index];
@@ -2173,6 +2226,121 @@ class ProImageEditorState extends State<ProImageEditor>
   Layer? selectLayerById(String id) {
     var index = activeLayers.indexWhere((layer) => layer.id == id);
     return selectLayerByIndex(index);
+  }
+
+  /// Groups the currently selected layers into a new [GroupLayer].
+  void groupSelectedLayers() {
+    // Create a copy of the active layers
+    List<Layer> layers = _layerCopyManager.copyLayerList(activeLayers);
+
+    // Find the index of the first selected layer
+    // to determine where to insert the group
+    var index = layers.indexWhere(
+        (layer) => layer.id == layerInteractionManager.selectedLayerIds.first);
+
+    // Sort the selected layers by index
+    final layerIndexes = layerInteractionManager.selectedLayerIds
+        .map((id) => layers.indexWhere((l) => l.id == id))
+        .toList()
+      ..sort(
+        (a, b) => a.compareTo(b),
+      );
+
+    // Calculate the group offset relative to the editor center
+    final editorCenterX = sizesManager.editorSize.width / 2;
+    final editorCenterY = sizesManager.editorCenterY();
+    final groupOffset =
+        _selectionRect.center - Offset(editorCenterX, editorCenterY);
+
+    // Insert the group at the first selected index
+    // and adjust the children offsets to be relative to the group
+    final groupId = 'group-${DateTime.now().millisecondsSinceEpoch}';
+    layers.insert(
+      index,
+      GroupLayer(
+        id: groupId,
+        offset: groupOffset,
+        center: groupOffset,
+        layers: layerIndexes
+            .map((i) => layers[i]..offset = layers[i].offset - groupOffset)
+            .toList(),
+      ),
+    );
+
+    // Remove the selected layers
+    for (var id in layerInteractionManager.selectedLayerIds) {
+      layers.removeWhere((l) => l.id == id);
+    }
+
+    // Update the history
+    addHistory(layers: layers);
+    layerInteractionManager.selectedLayerIds = [groupId];
+    _controllers.uiLayerCtrl.add(null);
+    setState(() {});
+  }
+
+  /// Ungroups the currently selected layers.
+  void ungroupSelectedLayers() {
+    // Create a copy of the active layers
+    List<Layer> layers = _layerCopyManager.copyLayerList(activeLayers);
+
+    // Find the group layers, then insert their children and remove them
+    for (var id in layerInteractionManager.selectedLayerIds) {
+      final layer = layers.firstWhere((l) => l.id == id);
+      if (layer.runtimeType == GroupLayer) {
+        layers
+          ..insertAll(
+            layers.indexOf(layer),
+            (layer as GroupLayer).layers.map((l) {
+              return l
+                ..offset = (layer.offset +
+                        getRotatedTopLeft(
+                          original: l.offset,
+                          center: layer.center,
+                          angle: layer.rotation,
+                        )) *
+                    layer.scale
+                ..rotation = l.rotation + layer.rotation
+                ..scale = l.scale * layer.scale;
+            }),
+          )
+          ..remove(layer);
+      }
+    }
+
+    addHistory(layers: layers);
+    layerInteractionManager.selectedLayerIds = layers
+        .map((l) {
+          if (l.runtimeType == GroupLayer) {
+            return (l as GroupLayer).layers.map((l) => l.id).toList();
+          }
+          return [l.id];
+        })
+        .expand((l) => l)
+        .toList();
+    _controllers.uiLayerCtrl.add(null);
+    setState(() {});
+  }
+
+  /// Calculates the new top-left position of a rectangle after rotation
+  Offset getRotatedTopLeft({
+    required Offset original,
+    required Offset center,
+    required double angle,
+  }) {
+    // Calculate vector from rotation center to original top-left
+    final dx = original.dx - center.dx;
+    final dy = original.dy - center.dy;
+
+    // Apply rotation
+    final rotatedDx = dx * cos(angle) - dy * sin(angle);
+    final rotatedDy = dx * sin(angle) + dy * cos(angle);
+
+    // Calculate new position
+    final newX = center.dx + rotatedDx;
+    final newY = center.dy + rotatedDy;
+
+    return Offset(newX, newY);
   }
 
   @override
@@ -2263,7 +2431,8 @@ class ProImageEditorState extends State<ProImageEditor>
           .call(this, _rebuildController.stream);
     }
 
-    return selectedLayerIndex >= 0 &&
+    return /* selectedLayerIndexes.isNotEmpty */ layerInteractionManager
+                .selectedLayerIds.isNotEmpty &&
             configs.layerInteraction.hideToolbarOnInteraction
         ? null
         : MainEditorAppBar(
@@ -2287,29 +2456,21 @@ class ProImageEditorState extends State<ProImageEditor>
               duration: const Duration(milliseconds: 200),
               child: Listener(
                 behavior: HitTestBehavior.translucent,
-                onPointerDown: (details) {
-                  bool isDoubleTap = detectDoubleTap(details);
-                  if (!isDoubleTap) return;
-
-                  handleDoubleTap(context, details, mainEditorConfigs);
-                  mainEditorCallbacks?.onDoubleTap?.call();
-                },
-                onPointerUp: onPointerUp,
-                onPointerSignal: isDesktop && _activeLayer != null
+                onPointerSignal: isDesktop && activeLayers.isNotEmpty
                     ? (event) {
-                        if (_activeLayer == null) return;
+                        if (_activeLayers.isEmpty) return;
                         _desktopInteractionManager.mouseScroll(
                           event,
-                          activeLayer: _activeLayer!,
-                          selectedLayerIndex: selectedLayerIndex,
+                          activeLayers: _activeLayers,
+                          // selectedLayerIndexes: selectedLayerIndexes,
                         );
                       }
                     : null,
                 child: GestureDetector(
                   behavior: HitTestBehavior.translucent,
                   onTap: () {
-                    if (layerInteractionManager.selectedLayerId.isNotEmpty) {
-                      layerInteractionManager.selectedLayerId = '';
+                    if (layerInteractionManager.selectedLayerIds.isNotEmpty) {
+                      layerInteractionManager.selectedLayerIds.clear();
                       _checkInteractiveViewer();
                       setState(() {});
                     }
@@ -2344,7 +2505,7 @@ class ProImageEditorState extends State<ProImageEditor>
       configs: configs,
       layerInteractionManager: layerInteractionManager,
       controllers: _controllers,
-      selectedLayerIndex: selectedLayerIndex,
+      // selectedLayerIndexes: selectedLayerIndexes,
       processFinalImage: _isProcessingFinalImage,
       rebuildController: _rebuildController,
       stateManager: stateManager,
@@ -2361,7 +2522,8 @@ class ProImageEditorState extends State<ProImageEditor>
           .call(this, _rebuildController.stream, _bottomBarKey);
     }
 
-    return selectedLayerIndex >= 0 &&
+    return /* selectedLayerIndexes.isNotEmpty */ layerInteractionManager
+                .selectedLayerIds.isNotEmpty &&
             configs.layerInteraction.hideToolbarOnInteraction
         ? null
         : MainEditorBottombar(
@@ -2389,16 +2551,17 @@ class ProImageEditorState extends State<ProImageEditor>
       configs: configs,
       callbacks: callbacks,
       sizesManager: sizesManager,
-      selectedLayerIndex: selectedLayerIndex,
+      // selectedLayerIndexes: selectedLayerIndexes,
       activeLayers: activeLayers,
       isSubEditorOpen: isSubEditorOpen,
       checkInteractiveViewer: _checkInteractiveViewer,
       onTextLayerTap: _onTextLayerTap,
       state: this,
-      setTempLayer: _setTempLayer,
+      setTempLayer: _addTempLayer,
       onContextMenuToggled: (isOpen) {
         _isContextMenuOpen = isOpen;
       },
+      onSelectionRectChanged: (value) => _selectionRect = value,
       stateManager: stateManager,
     );
   }
@@ -2415,7 +2578,7 @@ class ProImageEditorState extends State<ProImageEditor>
   }
 
   Widget _buildRemoveArea() {
-    if (_activeLayer?.interaction.enableMove == false) {
+    if (_activeLayers.every((l) => l.interaction.enableMove == false)) {
       return const SizedBox.shrink();
     }
     return MainEditorRemoveLayerArea(

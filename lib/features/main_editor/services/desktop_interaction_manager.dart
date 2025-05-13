@@ -82,7 +82,7 @@ class DesktopInteractionManager {
   /// triggers the navigator to pop the current context.
   bool onKey(
     KeyEvent event, {
-    required Layer? activeLayer,
+    required List<Layer> activeLayers,
     required Function onEscape,
     required Function(bool) onUndoRedo,
   }) {
@@ -102,19 +102,19 @@ class DesktopInteractionManager {
           case 'Numpad Subtract':
           case 'Page Down':
           case 'Arrow Down':
-            _keyboardZoom(zoomIn: true, activeLayer: activeLayer);
+            _keyboardZoom(zoomIn: true, activeLayers: activeLayers);
             break;
           case 'Add':
           case 'Numpad Add':
           case 'Page Up':
           case 'Arrow Up':
-            _keyboardZoom(zoomIn: false, activeLayer: activeLayer);
+            _keyboardZoom(zoomIn: false, activeLayers: activeLayers);
             break;
           case 'Arrow Left':
-            _keyboardRotate(left: true, activeLayer: activeLayer);
+            _keyboardRotate(left: true, activeLayers: activeLayers);
             break;
           case 'Arrow Right':
-            _keyboardRotate(left: false, activeLayer: activeLayer);
+            _keyboardRotate(left: false, activeLayers: activeLayers);
             break;
           case 'Control Left':
           case 'Control Right':
@@ -148,14 +148,17 @@ class DesktopInteractionManager {
   /// Handles Keyboard zoom event
   void _keyboardRotate({
     required bool left,
-    required Layer? activeLayer,
+    required List<Layer> activeLayers,
   }) {
-    if (activeLayer == null) return;
-    if (left) {
-      activeLayer.rotation -= 0.087266;
-    } else {
-      activeLayer.rotation += 0.087266;
+    if (activeLayers.isEmpty) return;
+    for (var activeLayer in activeLayers) {
+      if (left) {
+        activeLayer.rotation -= 0.087266;
+      } else {
+        activeLayer.rotation += 0.087266;
+      }
     }
+
     setState(() {});
     onUpdateUI?.call();
   }
@@ -163,20 +166,22 @@ class DesktopInteractionManager {
   /// Handles Keyboard zoom event
   void _keyboardZoom({
     required bool zoomIn,
-    required Layer? activeLayer,
+    required List<Layer> activeLayers,
   }) {
-    if (activeLayer == null) return;
-    double factor = activeLayer is PaintLayer
-        ? 0.1
-        : activeLayer is TextLayer
-            ? 0.15
-            : configs.textEditor.initFontSize / 50;
-    if (zoomIn) {
-      activeLayer
-        ..scale -= factor
-        ..scale = max(0.1, activeLayer.scale);
-    } else {
-      activeLayer.scale += factor;
+    if (activeLayers.isEmpty) return;
+    for (var activeLayer in activeLayers) {
+      double factor = activeLayer is PaintLayer
+          ? 0.1
+          : activeLayer is TextLayer
+              ? 0.15
+              : configs.textEditor.initFontSize / 50;
+      if (zoomIn) {
+        activeLayer
+          ..scale -= factor
+          ..scale = max(0.1, activeLayer.scale);
+      } else {
+        activeLayer.scale += factor;
+      }
     }
     setState(() {});
     onUpdateUI?.call();
@@ -185,33 +190,35 @@ class DesktopInteractionManager {
   /// Handles mouse scroll events.
   void mouseScroll(
     PointerSignalEvent event, {
-    required Layer activeLayer,
-    required int selectedLayerIndex,
+    required List<Layer> activeLayers,
+    // required List<int> selectedLayerIndexes,
   }) {
     bool shiftDown = HardwareKeyboard.instance.logicalKeysPressed
             .contains(LogicalKeyboardKey.shiftLeft) ||
         HardwareKeyboard.instance.logicalKeysPressed
             .contains(LogicalKeyboardKey.shiftRight);
 
-    if (event is PointerScrollEvent && selectedLayerIndex >= 0) {
-      if (shiftDown) {
-        if (event.scrollDelta.dy > 0) {
-          activeLayer.rotation -= 0.087266;
-        } else if (event.scrollDelta.dy < 0) {
-          activeLayer.rotation += 0.087266;
-        }
-      } else {
-        double factor = activeLayer is PaintLayer
-            ? 0.1
-            : activeLayer is TextLayer
-                ? 0.15
-                : configs.textEditor.initFontSize / 50;
-        if (event.scrollDelta.dy > 0) {
-          activeLayer
-            ..scale -= factor
-            ..scale = max(0.1, activeLayer.scale);
-        } else if (event.scrollDelta.dy < 0) {
-          activeLayer.scale += factor;
+    if (event is PointerScrollEvent && activeLayers.isNotEmpty) {
+      for (var activeLayer in activeLayers) {
+        if (shiftDown) {
+          if (event.scrollDelta.dy > 0) {
+            activeLayer.rotation -= 0.087266;
+          } else if (event.scrollDelta.dy < 0) {
+            activeLayer.rotation += 0.087266;
+          }
+        } else {
+          double factor = activeLayer is PaintLayer
+              ? 0.1
+              : activeLayer is TextLayer
+                  ? 0.15
+                  : configs.textEditor.initFontSize / 50;
+          if (event.scrollDelta.dy > 0) {
+            activeLayer
+              ..scale -= factor
+              ..scale = max(0.1, activeLayer.scale);
+          } else if (event.scrollDelta.dy < 0) {
+            activeLayer.scale += factor;
+          }
         }
       }
       setState(() {});

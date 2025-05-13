@@ -3,6 +3,8 @@ import 'dart:math';
 // Flutter imports:
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:pro_image_editor/core/models/layers/group_layer.dart';
+import 'package:pro_image_editor/shared/widgets/layer/widgets/layer_widget_group_item.dart';
 
 import '/core/mixins/converted_configs.dart';
 import '/core/mixins/editor_configs_mixin.dart';
@@ -307,6 +309,8 @@ class _LayerWidgetState extends State<LayerWidget>
       },
       onScaleRotateUp: widget.onScaleRotateUp,
       onRemoveLayer: widget.onRemoveTap,
+      insideGroup: configs.layerInteraction.selectionMode ==
+          LayerInteractionSelectionMode.multiple,
       onUnLockLayer: () {
         widget.onUnlockLayer?.call();
       },
@@ -326,11 +330,14 @@ class _LayerWidgetState extends State<LayerWidget>
                   behavior: HitTestBehavior.translucent,
                   onPointerDown: _onPointerDown,
                   onPointerUp: _onPointerUp,
-                  child: Padding(
-                    padding: EdgeInsets.all(widget.selected ? 7.0 : 0),
-                    child: FittedBox(
-                      child: _buildContent(),
-                    ),
+                  child: RawLayerWidget(
+                    layer: _layer,
+                    configs: configs,
+                    showMoveCursor: _showMoveCursor,
+                    onHitChanged: (state) => _lastHitState.value = state,
+                    selected: widget.selected,
+                    enableHitDetection: widget.enableHitDetection,
+                    highPerformanceMode: widget.highPerformanceMode,
                   ),
                 ),
               );
@@ -356,59 +363,97 @@ class _LayerWidgetState extends State<LayerWidget>
           );
         });
   }
+}
 
-  /// Builds the content widget based on the type of layer being displayed.
-  Widget _buildContent() {
-    Widget? content;
-    switch (_layerType) {
-      case LayerWidgetType.emoji:
-        content = LayerWidgetEmojiItem(
-          layer: _layer as EmojiLayer,
-          emojiEditorConfigs: emojiEditorConfigs,
-          textEditorConfigs: textEditorConfigs,
-          designMode: designMode,
-        );
-      case LayerWidgetType.text:
-        content = LayerWidgetTextItem(
-          layer: _layer as TextLayer,
-          textEditorConfigs: textEditorConfigs,
-          showMoveCursor: _showMoveCursor,
-          onHitChanged: (state) {
-            _lastHitState.value = state;
-          },
-        );
-      case LayerWidgetType.widget:
-        content = LayerWidgetCustomItem(
-          layer: _layer as WidgetLayer,
-          stickerEditorConfigs: stickerEditorConfigs,
-        );
-      case LayerWidgetType.canvas:
-        content = LayerWidgetPaintItem(
-          layer: _layer as PaintLayer,
-          scale: widget.layerData.scale,
-          isSelected: widget.selected,
-          enableHitDetection: widget.enableHitDetection,
-          isHighPerformanceMode: widget.highPerformanceMode,
-          onHitChanged: (state) {
-            _lastHitState.value = state;
-          },
-        );
-      case LayerWidgetType.censor:
-        content = LayerWidgetCensorItem(
-          layer: _layer as PaintLayer,
-          censorConfigs: paintEditorConfigs.censorConfigs,
-        );
-      default:
-        return const SizedBox.shrink();
-    }
+/// Builds the content widget based on the type of layer being displayed.
+class RawLayerWidget extends StatelessWidget {
+  /// Creates a [RawLayerWidget] with the specified properties.
+  const RawLayerWidget({
+    super.key,
+    required this.layer,
+    required this.configs,
+    required this.showMoveCursor,
+    required this.onHitChanged,
+    required this.selected,
+    required this.enableHitDetection,
+    required this.highPerformanceMode,
+  });
 
-    if (_layer.boxConstraints != null) {
-      content = ConstrainedBox(
-        constraints: _layer.boxConstraints!,
-        child: content,
-      );
-    }
+  /// The layer to be rendered.
+  final Layer layer;
 
-    return content;
+  /// The configuration options for the editor.
+  final ProImageEditorConfigs configs;
+
+  /// A value notifier that indicates whether the move cursor should be shown.
+  final ValueNotifier<bool> showMoveCursor;
+
+  /// A callback that is called when the hit detection state changes.
+  final ValueChanged<bool> onHitChanged;
+
+  /// Whether the layer is currently selected.
+  final bool selected;
+
+  /// Whether hit detection is enabled for the layer.
+  final bool enableHitDetection;
+
+  /// Whether the editor is in high-performance mode.
+  final bool highPerformanceMode;
+
+  @override
+  Widget build(BuildContext context) {
+    final layerType = switch (layer.runtimeType) {
+      const (TextLayer) => LayerWidgetType.text,
+      const (EmojiLayer) => LayerWidgetType.emoji,
+      const (WidgetLayer) => LayerWidgetType.widget,
+      const (PaintLayer) => (layer as PaintLayer).item.mode == PaintMode.blur ||
+              (layer as PaintLayer).item.mode == PaintMode.pixelate
+          ? LayerWidgetType.censor
+          : LayerWidgetType.canvas,
+      const (GroupLayer) => LayerWidgetType.group,
+      _ => LayerWidgetType.unknown,
+    };
+    return FittedBox(
+      child: switch (layerType) {
+        LayerWidgetType.emoji => LayerWidgetEmojiItem(
+            layer: layer as EmojiLayer,
+            emojiEditorConfigs: configs.emojiEditor,
+            textEditorConfigs: configs.textEditor,
+            designMode: configs.designMode,
+          ),
+        LayerWidgetType.text => LayerWidgetTextItem(
+            layer: layer as TextLayer,
+            textEditorConfigs: configs.textEditor,
+            showMoveCursor: showMoveCursor,
+            onHitChanged: onHitChanged,
+          ),
+        LayerWidgetType.widget => LayerWidgetCustomItem(
+            layer: layer as WidgetLayer,
+            stickerEditorConfigs: configs.stickerEditor,
+          ),
+        LayerWidgetType.canvas => LayerWidgetPaintItem(
+            layer: layer as PaintLayer,
+            scale: layer.scale,
+            isSelected: selected,
+            enableHitDetection: enableHitDetection,
+            isHighPerformanceMode: highPerformanceMode,
+            onHitChanged: onHitChanged,
+          ),
+        LayerWidgetType.censor => LayerWidgetCensorItem(
+            layer: layer as PaintLayer,
+            censorConfigs: configs.paintEditor.censorConfigs,
+          ),
+        LayerWidgetType.group => LayerWidgetGroupItem(
+            layer: layer as GroupLayer,
+            configs: configs,
+            showMoveCursor: showMoveCursor,
+            onHitChanged: onHitChanged,
+            selected: selected,
+            enableHitDetection: enableHitDetection,
+            highPerformanceMode: highPerformanceMode,
+          ),
+        _ => const SizedBox.shrink(),
+      },
+    );
   }
 }
