@@ -68,6 +68,7 @@ class LayerCopyManager {
       flipY: layer.flipY,
       customSecondaryColor: layer.customSecondaryColor,
       interaction: layer.interaction.copyWith(),
+      boxConstraints: layer.boxConstraints,
     );
   }
 
@@ -82,6 +83,7 @@ class LayerCopyManager {
       flipX: layer.flipX,
       flipY: layer.flipY,
       interaction: layer.interaction.copyWith(),
+      boxConstraints: layer.boxConstraints,
     );
   }
 
@@ -96,6 +98,7 @@ class LayerCopyManager {
       flipX: layer.flipX,
       flipY: layer.flipY,
       interaction: layer.interaction.copyWith(),
+      boxConstraints: layer.boxConstraints,
       exportConfigs: layer.exportConfigs.copyWith(),
     );
   }
@@ -113,6 +116,7 @@ class LayerCopyManager {
       rawSize: layer.rawSize,
       opacity: layer.opacity,
       interaction: layer.interaction.copyWith(),
+      boxConstraints: layer.boxConstraints,
     );
   }
 

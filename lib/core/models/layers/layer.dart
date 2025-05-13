@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:pro_image_editor/core/models/layers/group_layer.dart';
 
+import '/shared/extensions/box_constraints_extension.dart';
 import '/shared/services/import_export/types/widget_loader.dart';
 import '/shared/services/import_export/utils/key_minifier.dart';
 import '/shared/utils/map_utils.dart';
@@ -44,6 +45,7 @@ class Layer {
     this.flipY = false,
     this.isDeleted = false,
     this.meta,
+    this.boxConstraints,
   })  : id = id ?? generateUniqueId(),
         interaction = interaction ?? LayerInteraction();
 
@@ -61,6 +63,20 @@ class Layer {
     var keyInteractionConverter =
         minifier?.convertLayerInteractionKey ?? (String key) => key;
 
+    BoxConstraints? boxConstraints;
+    var constrainedMap = map[keyConverter('boxConstraints')];
+
+    if (constrainedMap != null) {
+      boxConstraints = BoxConstraints(
+        minWidth: safeParseDouble(constrainedMap['minWidth']),
+        minHeight: safeParseDouble(constrainedMap['minHeight']),
+        maxWidth: safeParseDouble(constrainedMap['maxWidth'],
+            fallback: double.infinity),
+        maxHeight: safeParseDouble(constrainedMap['maxHeight'],
+            fallback: double.infinity),
+      );
+    }
+
     /// Creates a base Layer instance with default or map-provided properties.
     Layer layer = Layer(
       id: id,
@@ -75,6 +91,7 @@ class Layer {
       offset: Offset(safeParseDouble(map['x']), safeParseDouble(map['y'])),
       rotation: safeParseDouble(map[keyConverter('rotation')]),
       scale: safeParseDouble(map[keyConverter('scale')], fallback: 1),
+      boxConstraints: boxConstraints,
     );
 
     /// Determines the layer type from the map and returns the appropriate
@@ -124,6 +141,9 @@ class Layer {
   /// Flags to control horizontal and vertical flipping.
   bool flipX, flipY;
 
+  /// Optional constraints to temporarily limit the layer's dimensions.
+  BoxConstraints? boxConstraints;
+
   /// The interaction settings for the layer.
   ///
   /// It holds the interaction properties, such as whether moving, scaling,
@@ -159,6 +179,7 @@ class Layer {
       'interaction': interaction.toMap(),
       if (meta != null) 'meta': meta,
       'type': 'default',
+      if (boxConstraints != null) 'boxConstraints': boxConstraints!.toMap()
     };
   }
 
@@ -180,6 +201,8 @@ class Layer {
       if (!mapIsEqual(layer.meta, meta)) 'meta': meta,
       if (layer.interaction != interaction)
         'interaction': interaction.toMapFromReference(layer.interaction),
+      if (layer.boxConstraints != boxConstraints)
+        'boxConstraints': boxConstraints!.toMap()
     };
   }
 
@@ -195,6 +218,7 @@ class Layer {
         other.flipX == flipX &&
         other.flipY == flipY &&
         other.interaction == interaction &&
+        other.boxConstraints == boxConstraints &&
         mapIsEqual(other.meta, meta) &&
         other.isDeleted == isDeleted;
   }
@@ -208,6 +232,7 @@ class Layer {
         flipX.hashCode ^
         flipY.hashCode ^
         interaction.hashCode ^
+        boxConstraints.hashCode ^
         meta.hashCode ^
         isDeleted.hashCode;
   }

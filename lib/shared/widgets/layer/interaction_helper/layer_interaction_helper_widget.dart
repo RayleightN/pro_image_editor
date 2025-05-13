@@ -131,7 +131,7 @@ class LayerInteractionHelperWidget extends StatefulWidget
   ///
   /// If true, the layer will not display interaction buttons.
   final bool insideGroup;
-
+  
   /// The function to be called when the layer is unlocked.
   final VoidCallback onUnLockLayer;
 
@@ -291,6 +291,7 @@ class _LayerInteractionHelperWidgetState
                     ],
                   ),
                 ),
+
               ),
             if (widget.insideGroup == false)
               ReactiveWidget(
