@@ -200,6 +200,11 @@ class _MainEditorLayersState extends State<MainEditorLayers> {
     widget.callbacks.mainEditorCallbacks?.handleUpdateUI();
   }
 
+  void _handleRemoveLayers(List<Layer> layers) {
+    widget.state.setState(() => widget.state.removeLayers(layers));
+    widget.callbacks.mainEditorCallbacks?.handleUpdateUI();
+  }
+
   /// Handles mouse hover events to change the cursor style
   void _handleMouseHover(PointerHoverEvent event) {
     final bool hasHit = widget.activeLayers
@@ -288,33 +293,35 @@ class _MainEditorLayersState extends State<MainEditorLayers> {
     }
 
     return [
-      Positioned.fromRect(
-        rect: _selectionRect,
-        child: LayerInteractionHelperWidget(
-          layerData: Layer(),
-          configs: widget.configs,
-          selected: true,
-          isInteractive: true,
-          onRemoveLayer: () => widget.layerInteractionManager.selectedLayerIds
-              .map((e) => widget.activeLayers.firstWhere((l) => l.id == e))
-              .forEach(_handleRemoveLayer),
-          onScaleRotateDown: (details) {
-            widget.layerInteractionManager.selectedLayerIds
+      if (_selectionRect != Rect.zero)
+        Positioned.fromRect(
+          rect: _selectionRect,
+          child: LayerInteractionHelperWidget(
+            layerData: Layer(),
+            configs: widget.configs,
+            selected: true,
+            isInteractive: true,
+            onRemoveLayer: () => _handleRemoveLayers(widget
+                .layerInteractionManager.selectedLayerIds
                 .map((e) => widget.activeLayers.firstWhere((l) => l.id == e))
-                .toList()
-                .asMap()
-                .entries
-                .forEach(
-                  (e) => _handleScaleRotateDown(
-                      e.key, _selectionRect.size, e.value),
-                );
-          },
-          onScaleRotateUp: (details) => _handleScaleRotateUp(),
-          onUnLockLayer: () {},
-          callbacks: widget.callbacks,
-          child: const SizedBox.expand(),
+                .toList()),
+            onScaleRotateDown: (details) {
+              widget.layerInteractionManager.selectedLayerIds
+                  .map((e) => widget.activeLayers.firstWhere((l) => l.id == e))
+                  .toList()
+                  .asMap()
+                  .entries
+                  .forEach(
+                    (e) => _handleScaleRotateDown(
+                        e.key, _selectionRect.size, e.value),
+                  );
+            },
+            onScaleRotateUp: (details) => _handleScaleRotateUp(),
+            onUnLockLayer: () {},
+            callbacks: widget.callbacks,
+            child: const SizedBox.expand(),
+          ),
         ),
-      ),
       UnconstrainedBox(
         child: AutoSizedStack(
           onSelectionRectChanged: _handleSelectionRectChanged,

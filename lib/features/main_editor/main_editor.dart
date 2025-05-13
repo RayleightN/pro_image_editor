@@ -754,6 +754,28 @@ class ProImageEditorState extends State<ProImageEditor>
     }
   }
 
+  /// Remove a list of layers from the editor.
+  ///
+  /// This method removes a list of layers from the editor and updates the
+  /// editing state.
+  void removeLayers(List<Layer> layers) {
+    final newLayers = _layerCopyManager.copyLayerList(activeLayers);
+    for (final layer in layers) {
+      final layerPos = newLayers.indexWhere((l) => l.id == layer.id);
+      if (layerPos >= 0) {
+        stateManager.activeLayers[layerPos] =
+            _layerCopyManager.copyLayer(layer);
+
+        mainEditorCallbacks
+            ?.handleRemoveLayer(stateManager.activeLayers[layerPos]);
+        newLayers.removeAt(layerPos);
+      }
+    }
+
+    addHistory(layers: newLayers);
+    setState(() {});
+  }
+
   /// Remove all layers from the editor.
   ///
   /// This method removes all layers from the editor and updates the editing

@@ -127,7 +127,6 @@ class LayerInteractionHelperWidget extends StatefulWidget
   /// If true, the layer is highlighted, and interaction buttons are displayed.
   final bool selected;
 
-
   /// Indicates whether the layer is a group.
   ///
   /// If true, the layer will not display interaction buttons.
@@ -184,7 +183,9 @@ class _LayerInteractionHelperWidgetState
 
     List<LayerInteractionItem> children = widget.insideGroup
         ? []
-        : layerInteraction.widgets.children ?? _buildDefaultInteractions();
+        : widget.layerData.interaction.isLocked
+            ? [_buildUnlock()]
+            : layerInteraction.widgets.children ?? _buildDefaultInteractions();
 
     final interactions = LayerItemInteractions(
       edit: widget.onEditLayer ?? () {},
@@ -212,10 +213,9 @@ class _LayerInteractionHelperWidgetState
                   ),
                   child: widget.child,
                 ),
-            Positioned(
-              top: 0,
-              child: Transform.rotate(
-                angle: 0,
+            if (children.isNotEmpty)
+              Positioned(
+                top: 0,
                 child: Container(
                   padding: const EdgeInsets.symmetric(horizontal: 12),
                   height: 40,
@@ -240,25 +240,22 @@ class _LayerInteractionHelperWidgetState
                   ),
                   child: Row(
                     children: [
-                      if (widget.layerData.interaction.isLocked)
-                        _buildUnlock()
-                      else
-                        ...children.map(
-                          (item) => item.call(
-                            _rebuildStream.stream,
-                            widget.layerData,
-                            LayerItemInteractions(
-                              edit: widget.onEditLayer ?? () {},
-                              remove: widget.onRemoveLayer ?? () {},
-                              scaleRotateDown: (event) {
-                                widget.onScaleRotateDown?.call(event);
-                              },
-                              scaleRotateUp: (event) {
-                                widget.onScaleRotateUp?.call(event);
-                              },
-                            ),
+                      ...children.map(
+                        (item) => item.call(
+                          _rebuildStream.stream,
+                          widget.layerData,
+                          LayerItemInteractions(
+                            edit: widget.onEditLayer ?? () {},
+                            remove: widget.onRemoveLayer ?? () {},
+                            scaleRotateDown: (event) {
+                              widget.onScaleRotateDown?.call(event);
+                            },
+                            scaleRotateUp: (event) {
+                              widget.onScaleRotateUp?.call(event);
+                            },
                           ),
                         ),
+                      ),
                       // ReactiveWidget(
                       //   stream: _rebuildStream.stream,
                       //   builder: (_) => LayerInteractionButton(
@@ -287,7 +284,7 @@ class _LayerInteractionHelperWidgetState
                       //           icon: Icons.more_horiz,
                       //           tooltip: i18n.layerInteraction.edit,
                       //           color:
-                      //               layerInteraction.style.buttonEditTextColor,
+                      //             layerInteraction.style.buttonEditTextColor,
                       //           background: layerInteraction
                       //               .style.buttonEditTextBackground,
                       //         )),
@@ -295,25 +292,25 @@ class _LayerInteractionHelperWidgetState
                   ),
                 ),
               ),
-            ),
-            ReactiveWidget(
-              stream: _rebuildStream.stream,
-              builder: (_) => Positioned(
-                bottom: 8,
-                child: LayerInteractionButton(
-                  rotation: -widget.layerData.rotation,
-                  onScaleRotateDown: interactions.scaleRotateDown,
-                  onScaleRotateUp: interactions.scaleRotateUp,
-                  buttonRadius: layerInteraction.style.buttonRadius,
-                  cursor: layerInteraction.style.rotateScaleCursor,
-                  icon: Icons.sync,
-                  tooltip: i18n.layerInteraction.rotateScale,
-                  color: layerInteraction.style.buttonScaleRotateColor,
-                  background:
-                      layerInteraction.style.buttonScaleRotateBackground,
+            if (widget.insideGroup == false)
+              ReactiveWidget(
+                stream: _rebuildStream.stream,
+                builder: (_) => Positioned(
+                  bottom: 0,
+                  child: LayerInteractionButton(
+                    rotation: -widget.layerData.rotation,
+                    onScaleRotateDown: interactions.scaleRotateDown,
+                    onScaleRotateUp: interactions.scaleRotateUp,
+                    buttonRadius: layerInteraction.style.buttonRadius,
+                    cursor: layerInteraction.style.rotateScaleCursor,
+                    icon: Icons.sync,
+                    tooltip: i18n.layerInteraction.rotateScale,
+                    color: layerInteraction.style.buttonScaleRotateColor,
+                    background:
+                        layerInteraction.style.buttonScaleRotateBackground,
+                  ),
                 ),
               ),
-            ),
             // ...children.map(
             //   (item) => item.call(
             //     _rebuildStream.stream,
@@ -363,17 +360,20 @@ class _LayerInteractionHelperWidgetState
     ];
   }
 
-  Widget _buildUnlock() {
-    return LayerInteractionButton(
-      rotation: -widget.layerData.rotation,
-      onTap: widget.onUnLockLayer,
-      buttonRadius: layerInteraction.style.buttonRadius,
-      cursor: layerInteraction.style.removeCursor,
-      icon: Icons.lock_open,
-      tooltip: i18n.layerInteraction.remove,
-      color: const Color(0xff1a6dff),
-      background: Colors.white,
-    );
+  LayerInteractionItem _buildUnlock() {
+    return (rebuildStream, layer, interactions) => ReactiveWidget(
+          stream: rebuildStream,
+          builder: (_) => LayerInteractionButton(
+            rotation: -widget.layerData.rotation,
+            onTap: widget.onUnLockLayer,
+            buttonRadius: layerInteraction.style.buttonRadius,
+            cursor: layerInteraction.style.removeCursor,
+            icon: Icons.lock_open,
+            tooltip: i18n.layerInteraction.remove,
+            color: const Color(0xff1a6dff),
+            background: Colors.white,
+          ),
+        );
   }
 
   Widget _buildRotateScaleIcon(LayerItemInteractions interactions) {
@@ -383,20 +383,16 @@ class _LayerInteractionHelperWidgetState
           (value) => widget.onScaleRotateUp?.call(value),
           -widget.layerData.rotation,
         ) ??
-        Positioned(
-          bottom: 0,
-          right: 0,
-          child: LayerInteractionButton(
-            rotation: -widget.layerData.rotation,
-            onScaleRotateDown: interactions.scaleRotateDown,
-            onScaleRotateUp: interactions.scaleRotateUp,
-            buttonRadius: layerInteraction.style.buttonRadius,
-            cursor: layerInteraction.style.rotateScaleCursor,
-            icon: layerInteraction.icons.rotateScale,
-            tooltip: i18n.layerInteraction.rotateScale,
-            color: layerInteraction.style.buttonScaleRotateColor,
-            background: layerInteraction.style.buttonScaleRotateBackground,
-          ),
+        LayerInteractionButton(
+          rotation: -widget.layerData.rotation,
+          onScaleRotateDown: interactions.scaleRotateDown,
+          onScaleRotateUp: interactions.scaleRotateUp,
+          buttonRadius: layerInteraction.style.buttonRadius,
+          cursor: layerInteraction.style.rotateScaleCursor,
+          icon: layerInteraction.icons.rotateScale,
+          tooltip: i18n.layerInteraction.rotateScale,
+          color: layerInteraction.style.buttonScaleRotateColor,
+          background: layerInteraction.style.buttonScaleRotateBackground,
         );
   }
 
@@ -406,19 +402,15 @@ class _LayerInteractionHelperWidgetState
           () => widget.onEditLayer?.call(),
           -widget.layerData.rotation,
         ) ??
-        Positioned(
-          top: 0,
-          right: 0,
-          child: LayerInteractionButton(
-            rotation: -widget.layerData.rotation,
-            onTap: interactions.edit,
-            buttonRadius: layerInteraction.style.buttonRadius,
-            cursor: layerInteraction.style.editCursor,
-            icon: layerInteraction.icons.edit,
-            tooltip: i18n.layerInteraction.edit,
-            color: layerInteraction.style.buttonEditTextColor,
-            background: layerInteraction.style.buttonEditTextBackground,
-          ),
+        LayerInteractionButton(
+          rotation: -widget.layerData.rotation,
+          onTap: interactions.edit,
+          buttonRadius: layerInteraction.style.buttonRadius,
+          cursor: layerInteraction.style.editCursor,
+          icon: layerInteraction.icons.edit,
+          tooltip: i18n.layerInteraction.edit,
+          color: layerInteraction.style.buttonEditTextColor,
+          background: layerInteraction.style.buttonEditTextBackground,
         );
   }
 
@@ -428,19 +420,15 @@ class _LayerInteractionHelperWidgetState
           () => widget.onRemoveLayer?.call(),
           -widget.layerData.rotation,
         ) ??
-        Positioned(
-          top: 0,
-          left: 0,
-          child: LayerInteractionButton(
-            rotation: -widget.layerData.rotation,
-            onTap: interactions.remove,
-            buttonRadius: layerInteraction.style.buttonRadius,
-            cursor: layerInteraction.style.removeCursor,
-            icon: layerInteraction.icons.remove,
-            tooltip: i18n.layerInteraction.remove,
-            color: layerInteraction.style.buttonRemoveColor,
-            background: layerInteraction.style.buttonRemoveBackground,
-          ),
+        LayerInteractionButton(
+          rotation: -widget.layerData.rotation,
+          onTap: interactions.remove,
+          buttonRadius: layerInteraction.style.buttonRadius,
+          cursor: layerInteraction.style.removeCursor,
+          icon: layerInteraction.icons.remove,
+          tooltip: i18n.layerInteraction.remove,
+          color: layerInteraction.style.buttonRemoveColor,
+          background: layerInteraction.style.buttonRemoveBackground,
         );
   }
 }
