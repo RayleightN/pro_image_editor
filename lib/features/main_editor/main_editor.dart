@@ -693,7 +693,7 @@ class ProImageEditorState extends State<ProImageEditor>
     required int index,
     required Layer layer,
   }) {
-    layerInteractionManager.selectedLayerIds.clear();
+    layerInteractionManager.updateSelectedLayerIds([]);
     addHistory(
       layers: [...activeLayers]
         ..removeAt(index)
@@ -713,7 +713,7 @@ class ProImageEditorState extends State<ProImageEditor>
     bool blockSelectLayer = false,
     bool blockCaptureScreenshot = false,
   }) {
-    layerInteractionManager.selectedLayerIds.clear();
+    layerInteractionManager.updateSelectedLayerIds([]);
 
     addHistory(newLayer: layer, blockCaptureScreenshot: blockCaptureScreenshot);
 
@@ -726,7 +726,7 @@ class ProImageEditorState extends State<ProImageEditor>
       /// Skip one frame to ensure captured image in separate thread will not
       /// capture the border.
       WidgetsBinding.instance.addPostFrameCallback((_) async {
-        layerInteractionManager.selectedLayerIds.add(layer.id);
+        layerInteractionManager.addSelectedLayerId(layer.id);
         _controllers.uiLayerCtrl.add(null);
         _checkInteractiveViewer();
       });
@@ -759,19 +759,21 @@ class ProImageEditorState extends State<ProImageEditor>
   /// This method removes a list of layers from the editor and updates the
   /// editing state.
   void removeLayers(List<Layer> layers) {
-    final newLayers = _layerCopyManager.copyLayerList(activeLayers);
     for (final layer in layers) {
-      final layerPos = newLayers.indexWhere((l) => l.id == layer.id);
+      final layerPos = activeLayers.indexWhere((l) => l.id == layer.id);
       if (layerPos >= 0) {
         stateManager.activeLayers[layerPos] =
             _layerCopyManager.copyLayer(layer);
 
         mainEditorCallbacks
             ?.handleRemoveLayer(stateManager.activeLayers[layerPos]);
-        newLayers.removeAt(layerPos);
       }
     }
-
+    final newLayers = _layerCopyManager.copyLayerList(
+      activeLayers
+          .where((l) => layers.every((layer) => layer.id != l.id))
+          .toList(),
+    );
     addHistory(layers: newLayers);
     setState(() {});
   }
@@ -791,7 +793,7 @@ class ProImageEditorState extends State<ProImageEditor>
   /// editing state.
   void _updateTempLayer() {
     addHistory();
-    layerInteractionManager.selectedLayerIds.clear();
+    layerInteractionManager.updateSelectedLayerIds([]);
     _checkInteractiveViewer();
     _controllers.uiLayerCtrl.add(null);
 
@@ -1042,7 +1044,7 @@ class ProImageEditorState extends State<ProImageEditor>
       var layer = activeLayers.firstWhere((l) => l.id == selectedLayerIndex);
 
       if (!layerInteractionManager.selectedLayerIds.contains(layer.id)) {
-        layerInteractionManager.selectedLayerIds.clear();
+        layerInteractionManager.updateSelectedLayerIds([]);
         _checkInteractiveViewer();
       }
 
@@ -1255,7 +1257,7 @@ class ProImageEditorState extends State<ProImageEditor>
       Future.delayed(const Duration(milliseconds: 1), () async {
         if (isSubEditorOpen) await _pageOpenCompleter.future;
         WidgetsBinding.instance.addPostFrameCallback((_) async {
-          layerInteractionManager.selectedLayerIds.add(id);
+          layerInteractionManager.addSelectedLayerId(id);
           _checkInteractiveViewer();
           setState(() {});
         });
@@ -1270,7 +1272,7 @@ class ProImageEditorState extends State<ProImageEditor>
     Widget page, {
     Duration duration = const Duration(milliseconds: 300),
   }) {
-    layerInteractionManager.selectedLayerIds.clear();
+    layerInteractionManager.updateSelectedLayerIds([]);
     _checkInteractiveViewer();
     isSubEditorOpen = true;
 
@@ -1678,7 +1680,7 @@ class ProImageEditorState extends State<ProImageEditor>
   /// active and restored
   /// after its closure.
   void openEmojiEditor() async {
-    setState(() => layerInteractionManager.selectedLayerIds.clear());
+    setState(() => layerInteractionManager.updateSelectedLayerIds([]));
     _checkInteractiveViewer();
     ServicesBinding.instance.keyboard.removeHandler(_onKeyEvent);
     final effectiveBoxConstraints = emojiEditorConfigs
@@ -1733,7 +1735,7 @@ class ProImageEditorState extends State<ProImageEditor>
 
   /// Opens the sticker editor as a modal bottom sheet.
   void openStickerEditor() async {
-    setState(() => layerInteractionManager.selectedLayerIds.clear());
+    setState(() => layerInteractionManager.updateSelectedLayerIds([]));
     _checkInteractiveViewer();
     ServicesBinding.instance.keyboard.removeHandler(_onKeyEvent);
     final effectiveBoxConstraints = stickerEditorConfigs
@@ -1776,7 +1778,7 @@ class ProImageEditorState extends State<ProImageEditor>
 
   /// add custom layer to the editor.
   void onAddCustomLayer(WidgetLayer layer) async {
-    setState(() => layerInteractionManager.selectedLayerIds.clear());
+    setState(() => layerInteractionManager.updateSelectedLayerIds([]));
     _checkInteractiveViewer();
     ServicesBinding.instance.keyboard.removeHandler(_onKeyEvent);
     ServicesBinding.instance.keyboard.addHandler(_onKeyEvent);
@@ -1817,7 +1819,7 @@ class ProImageEditorState extends State<ProImageEditor>
   void undoAction() {
     if (stateManager.canUndo) {
       setState(() {
-        layerInteractionManager.selectedLayerIds.clear();
+        layerInteractionManager.updateSelectedLayerIds([]);
         _checkInteractiveViewer();
         stateManager.undo();
         decodeImage();
@@ -1836,7 +1838,7 @@ class ProImageEditorState extends State<ProImageEditor>
   void redoAction() {
     if (stateManager.canRedo) {
       setState(() {
-        layerInteractionManager.selectedLayerIds.clear();
+        layerInteractionManager.updateSelectedLayerIds([]);
         _checkInteractiveViewer();
         stateManager.redo();
         decodeImage();
@@ -1895,7 +1897,7 @@ class ProImageEditorState extends State<ProImageEditor>
     /// a correct image.
     setState(() {
       _isProcessingFinalImage = true;
-      layerInteractionManager.selectedLayerIds.clear();
+      layerInteractionManager.updateSelectedLayerIds([]);
       _checkInteractiveViewer();
     });
 
@@ -2191,7 +2193,7 @@ class ProImageEditorState extends State<ProImageEditor>
   /// - Notifying listeners via [_controllers.uiLayerCtrl]
   void clearLayerSelection() {
     // selectedLayerIndexes.clear();
-    layerInteractionManager.selectedLayerIds.clear();
+    layerInteractionManager.updateSelectedLayerIds([]);
     _controllers.uiLayerCtrl.add(null);
   }
 
@@ -2211,7 +2213,7 @@ class ProImageEditorState extends State<ProImageEditor>
 
     var layer = activeLayers[index];
 
-    layerInteractionManager.selectedLayerIds.add(layer.id);
+    layerInteractionManager.addSelectedLayerId(layer.id);
     _controllers.uiLayerCtrl.add(null);
 
     return activeLayers[index];
@@ -2274,7 +2276,7 @@ class ProImageEditorState extends State<ProImageEditor>
 
     // Update the history
     addHistory(layers: layers);
-    layerInteractionManager.selectedLayerIds = [groupId];
+    layerInteractionManager.updateSelectedLayerIds([groupId]);
     _controllers.uiLayerCtrl.add(null);
     setState(() {});
   }
@@ -2309,7 +2311,7 @@ class ProImageEditorState extends State<ProImageEditor>
     }
 
     addHistory(layers: layers);
-    layerInteractionManager.selectedLayerIds = layers
+    layerInteractionManager.updateSelectedLayerIds(layers
         .map((l) {
           if (l.runtimeType == GroupLayer) {
             return (l as GroupLayer).layers.map((l) => l.id).toList();
@@ -2317,7 +2319,7 @@ class ProImageEditorState extends State<ProImageEditor>
           return [l.id];
         })
         .expand((l) => l)
-        .toList();
+        .toList());
     _controllers.uiLayerCtrl.add(null);
     setState(() {});
   }
@@ -2470,7 +2472,7 @@ class ProImageEditorState extends State<ProImageEditor>
                   behavior: HitTestBehavior.translucent,
                   onTap: () {
                     if (layerInteractionManager.selectedLayerIds.isNotEmpty) {
-                      layerInteractionManager.selectedLayerIds.clear();
+                      layerInteractionManager.updateSelectedLayerIds([]);
                       _checkInteractiveViewer();
                       setState(() {});
                     }

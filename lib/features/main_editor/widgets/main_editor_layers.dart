@@ -136,17 +136,17 @@ class _MainEditorLayersState extends State<MainEditorLayers> {
         case LayerInteractionSelectionMode.single:
           if (widget.layerInteractionManager.selectedLayerIds
               .contains(layer.id)) {
-            widget.layerInteractionManager.selectedLayerIds.clear();
+            widget.layerInteractionManager.updateSelectedLayerIds([]);
           } else {
-            widget.layerInteractionManager.selectedLayerIds = [layer.id];
+            widget.layerInteractionManager.updateSelectedLayerIds([layer.id]);
           }
           break;
         case LayerInteractionSelectionMode.multiple:
           if (widget.layerInteractionManager.selectedLayerIds
               .contains(layer.id)) {
-            widget.layerInteractionManager.selectedLayerIds.remove(layer.id);
+            widget.layerInteractionManager.removeSelectedId(layer.id);
           } else {
-            widget.layerInteractionManager.selectedLayerIds.add(layer.id);
+            widget.layerInteractionManager.addSelectedLayerId(layer.id);
           }
           break;
       }
@@ -197,11 +197,15 @@ class _MainEditorLayersState extends State<MainEditorLayers> {
 
   void _handleRemoveLayer(Layer layer) {
     widget.state.setState(() => widget.state.removeLayer(layer));
+    widget.layerInteractionManager.removeSelectedId(layer.id);
     widget.callbacks.mainEditorCallbacks?.handleUpdateUI();
   }
 
   void _handleRemoveLayers(List<Layer> layers) {
     widget.state.setState(() => widget.state.removeLayers(layers));
+    for (var layer in layers) {
+      widget.layerInteractionManager.removeSelectedId(layer.id);
+    }
     widget.callbacks.mainEditorCallbacks?.handleUpdateUI();
   }
 

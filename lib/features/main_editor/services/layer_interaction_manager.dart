@@ -119,12 +119,33 @@ class LayerInteractionManager {
   List<String> _selectedLayerIds = [];
 
   /// Returns the ID of the currently selected layers.
-  List<String> get selectedLayerIds => _selectedLayerIds;
+  ///
+  /// The returned list is unmodifiable.
+  /// Use [updateSelectedLayerIds] to update the selected layers.
+  List<String> get selectedLayerIds => List.unmodifiable(_selectedLayerIds);
 
-  /// Sets the ID of the currently selected layers.
-  /// ?????????
-  set selectedLayerIds(List<String> ids) {
+  /// Updates the ID of the currently selected layers.
+  void updateSelectedLayerIds(List<String> ids) {
     _selectedLayerIds = ids;
+    onSelectedLayerChanged?.call(_selectedLayerIds);
+  }
+
+  /// Adds a layer ID to the list of selected layers.
+  ///
+  /// If [index] is provided, the layer will be inserted at that index.
+  /// Otherwise, the layer will be appended to the end of the list.
+  void addSelectedLayerId(String id, [int index = -1]) {
+    if (index == -1) {
+      _selectedLayerIds.add(id);
+    } else {
+      _selectedLayerIds.insert(index, id);
+    }
+    onSelectedLayerChanged?.call(_selectedLayerIds);
+  }
+
+  /// Removes a layer ID from the list of selected layers.
+  void removeSelectedId(String id) {
+    _selectedLayerIds.remove(id);
     onSelectedLayerChanged?.call(_selectedLayerIds);
   }
 
