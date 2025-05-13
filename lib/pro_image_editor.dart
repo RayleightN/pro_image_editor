@@ -9,6 +9,7 @@ export '/plugins/emoji_picker_flutter/emoji_picker_flutter.dart'
 export 'core/models/editor_callbacks/pro_image_editor_callbacks.dart';
 
 /// Configs and Callbacks
+export 'core/enums/editor_mode.dart';
 export 'core/models/editor_configs/pro_image_editor_configs.dart';
 export 'core/models/editor_image.dart';
 export 'core/models/history/state_history.dart';
@@ -58,6 +59,7 @@ export 'shared/widgets/reactive_widgets/reactive_custom_appbar.dart';
 export 'shared/widgets/reactive_widgets/reactive_custom_widget.dart';
 export 'shared/widgets/extended/extended_pop_scope.dart';
 export 'core/constants/editor_style_constants.dart';
+export 'core/utils/image_converter.dart';
 
 /// Widgets
 export 'shared/widgets/animated/fade_in_up.dart';

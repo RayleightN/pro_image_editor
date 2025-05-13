@@ -1,5 +1,40 @@
 # Changelog
 
+## 9.8.1
+ - **FIX**(Image-Generation): Resolved an issue that the image generation was slowly.
+
+## 9.8.0
+ - **FEAT**(Layer): Introduce `BoxConstraints` to `Layer` class for enhanced constraint management and layout control.
+
+## 9.7.3
+ - **FEAT**(Main-Editor): Add EditorSafeArea to the Main editor to follow SubEditor logic.
+
+## 9.7.2
+ - **FIX**(Tune-Editor): Ensure the back button works properly. This resolves issue [#449](https://github.com/hm21/pro_image_editor/issues/449).
+
+## 9.7.1
+ - **FIX**(Import): Ensure imported numbers are type-safe even if int and double are incorrect. This resolves issue [#447](https://github.com/hm21/pro_image_editor/issues/447).
+
+## 9.7.0
+- **FEAT**(image-converter): Add singleton `ImageConverter` class for format conversion without the image editor.
+
+## 9.6.1
+- **FIX**(double-tap): Resolved an issue where double-tapping interfered with pinch-to-zoom functionality. Resolves [#439](https://github.com/hm21/pro_image_editor/issues/439).
+- **FIX**(hit-detection): Prevent layer hit detection errors by clamping inner dimensions. Resolves [#440](https://github.com/hm21/pro_image_editor/issues/440).
+
+## 9.6.0
+- **FEAT**(double-tap):  Support double-tap to zoom in/out when zoom is enabled. More details in Feature-Request [#429](https://github.com/hm21/pro_image_editor/pull/429).
+
+## 9.5.2
+- **FIX**(zoom): Fixed issue where config `enableMainEditorZoomFactor` had no effect when creating a new text-layer. Resolves [#426](https://github.com/hm21/pro_image_editor/issues/426).
+
+## 9.5.1
+- **FIX**(onCompleteWithParameters): Return correct parameters on completion. Resolves [#403](https://github.com/hm21/pro_image_editor/issues/403).
+
+## 9.5.0
+- **FEAT**(callback): Added `copyWith` method to all callback models. More details in Feature-Request [#424](https://github.com/hm21/pro_image_editor/pull/424).
+- **FEAT**(zoom): Preserved zoom state by sharing Matrix4 between paint and main editor
+
 ## 9.4.1
 - **FEAT**(callback): Added `onSelectedLayerChanged` callback to notify when the selected layer changes. More details in PR [#423](https://github.com/hm21/pro_image_editor/pull/423).
 

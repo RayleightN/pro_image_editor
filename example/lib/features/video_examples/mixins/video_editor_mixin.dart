@@ -1,4 +1,4 @@
-import 'dart:typed_data';
+/* import 'dart:typed_data';
 
 import 'package:example/core/constants/example_constants.dart';
 import 'package:example/features/preview/preview_video.dart';
@@ -155,7 +155,8 @@ mixin VideoEditorMixin<T extends StatefulWidget> on State<T> {
   ///
   /// If [exportedVideo] is available, it navigates to [PreviewVideo].
   /// Afterwards, it pops the current editor page.
-  void onCloseEditor() async {
+  void onCloseEditor(EditorMode editorMode) async {
+    if (editorMode != EditorMode.main) return Navigator.pop(context);
     if (exportedVideo != null) {
       await Navigator.push(
         context,
@@ -173,3 +174,4 @@ mixin VideoEditorMixin<T extends StatefulWidget> on State<T> {
     }
   }
 }
+ */
