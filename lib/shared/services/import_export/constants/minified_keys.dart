@@ -62,6 +62,8 @@ const Map<String, String> kMinifiedLayerKeys = {
 
   /// Only in version < 8.0.0
   'enableInteraction': 'ei',
+  'children': 'ch',
+  'center': 'ce',
 };
 
 /// A constant map containing minified layer interaction keys for import/export

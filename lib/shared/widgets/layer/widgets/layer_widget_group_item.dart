@@ -46,7 +46,7 @@ class LayerWidgetGroupItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AutoSizedStack(
-      children: layer.layers
+      children: layer.children
           .map(
             (e) => PositionedItem(
               offset: getRotatedTopLeft(
