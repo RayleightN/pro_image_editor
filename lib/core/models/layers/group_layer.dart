@@ -25,13 +25,13 @@ class GroupLayer extends Layer {
       scale: layer.scale,
       isDeleted: layer.isDeleted,
       meta: layer.meta,
-      layers: map[keyConverter('layers')],
+      children: map[keyConverter('children')],
     );
   }
 
   /// Creates a new instance of [GroupLayer].
   GroupLayer({
-    required this.layers,
+    required this.children,
     required this.center,
     super.offset,
     super.rotation,
@@ -45,7 +45,7 @@ class GroupLayer extends Layer {
   });
 
   /// The list of layers in the group.
-  final List<Layer> layers;
+  final List<Layer> children;
 
   /// The center of the group.
   Offset center;
@@ -54,7 +54,7 @@ class GroupLayer extends Layer {
   Map<String, dynamic> toMap() {
     return {
       ...super.toMap(),
-      'layers': layers,
+      'children': children,
       'center': center,
       'type': 'group',
     };
@@ -65,7 +65,7 @@ class GroupLayer extends Layer {
     final groupLayer = (layer as GroupLayer);
     return {
       ...super.toMapFromReference(layer),
-      if (groupLayer.layers != layers) 'layers': layers,
+      if (groupLayer.children != children) 'children': children,
       if (groupLayer.center != center) 'center': center,
     };
   }

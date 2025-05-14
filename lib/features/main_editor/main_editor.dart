@@ -2263,7 +2263,7 @@ class ProImageEditorState extends State<ProImageEditor>
         id: groupId,
         offset: groupOffset,
         center: groupOffset,
-        layers: layerIndexes
+        children: layerIndexes
             .map((i) => layers[i]..offset = layers[i].offset - groupOffset)
             .toList(),
       ),
@@ -2293,7 +2293,7 @@ class ProImageEditorState extends State<ProImageEditor>
         layers
           ..insertAll(
             layers.indexOf(layer),
-            (layer as GroupLayer).layers.map((l) {
+            (layer as GroupLayer).children.map((l) {
               return l
                 ..offset = (layer.offset +
                         getRotatedTopLeft(
@@ -2314,7 +2314,7 @@ class ProImageEditorState extends State<ProImageEditor>
     layerInteractionManager.updateSelectedLayerIds(layers
         .map((l) {
           if (l.runtimeType == GroupLayer) {
-            return (l as GroupLayer).layers.map((l) => l.id).toList();
+            return (l as GroupLayer).children.map((l) => l.id).toList();
           }
           return [l.id];
         })

@@ -130,7 +130,7 @@ class LayerCopyManager {
       flipX: layer.flipX,
       flipY: layer.flipY,
       interaction: layer.interaction.copyWith(),
-      layers: layer.layers.map(copyLayer).toList(),
+      children: layer.children.map(copyLayer).toList(),
       center: layer.center,
     );
   }

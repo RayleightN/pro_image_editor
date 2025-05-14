@@ -278,7 +278,9 @@ class _MainEditorLayersState extends State<MainEditorLayers> {
                             .asMap()
                             .entries
                             .map(_buildLayerWidget),
-                        ..._buildGroupedItem(),
+                        if (widget.configs.layerInteraction.selectionMode ==
+                            LayerInteractionSelectionMode.multiple)
+                          ..._buildGroupedItem(),
                       ],
                     );
                   },

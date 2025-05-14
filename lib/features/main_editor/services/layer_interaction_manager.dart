@@ -121,7 +121,9 @@ class LayerInteractionManager {
   /// Returns the ID of the currently selected layers.
   ///
   /// The returned list is unmodifiable.
-  /// Use [updateSelectedLayerIds] to update the selected layers.
+  /// Use [updateSelectedLayerIds] to update the selected layers
+  /// or [addSelectedLayerId] to add a new layer to the selection
+  /// or [removeSelectedId] to remove a layer from the selection.
   List<String> get selectedLayerIds => List.unmodifiable(_selectedLayerIds);
 
   /// Updates the ID of the currently selected layers.

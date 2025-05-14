@@ -5,6 +5,7 @@ import 'dart:convert';
 // Flutter imports:
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
+import 'package:pro_image_editor/core/models/layers/group_layer.dart';
 
 import '/core/models/editor_configs/pro_image_editor_configs.dart';
 import '/core/models/history/state_history.dart';
@@ -281,7 +282,8 @@ class ExportStateHistory {
     for (var layer in element.layers) {
       if ((_configs.exportPaint && layer.runtimeType == PaintLayer) ||
           (_configs.exportText && layer.runtimeType == TextLayer) ||
-          (_configs.exportEmoji && layer.runtimeType == EmojiLayer)) {
+          (_configs.exportEmoji && layer.runtimeType == EmojiLayer) ||
+          (_configs.exportGroup && layer.runtimeType == GroupLayer)) {
         updateReference(layer);
       } else if (_configs.exportWidgets && layer.runtimeType == WidgetLayer) {
         WidgetLayer widgetLayer = layer as WidgetLayer;
