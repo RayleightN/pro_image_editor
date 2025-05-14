@@ -301,7 +301,8 @@ class _MainEditorLayersState extends State<MainEditorLayers> {
     return [
       if (_selectionRect != Rect.zero)
         Positioned.fromRect(
-          rect: _selectionRect,
+          // 48 is the margin inside LayerInteractionHelperWidget
+          rect: _selectionRect.inflate(48),
           child: LayerInteractionHelperWidget(
             layerData: Layer(),
             configs: widget.configs,

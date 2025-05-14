@@ -131,7 +131,7 @@ class LayerInteractionHelperWidget extends StatefulWidget
   ///
   /// If true, the layer will not display interaction buttons.
   final bool insideGroup;
-  
+
   /// The function to be called when the layer is unlocked.
   final VoidCallback onUnLockLayer;
 
@@ -205,14 +205,17 @@ class _LayerInteractionHelperWidgetState
           alignment: Alignment.center,
           clipBehavior: Clip.none,
           children: [
-            layerInteraction.widgets.border
-                    ?.call(widget.child, widget.layerData) ??
-                CustomPaint(
-                  foregroundPainter: LayerInteractionBorderPainter(
-                    style: layerInteraction.style,
+            Container(
+              margin: const EdgeInsets.all(48),
+              child: layerInteraction.widgets.border
+                      ?.call(widget.child, widget.layerData) ??
+                  CustomPaint(
+                    foregroundPainter: LayerInteractionBorderPainter(
+                      style: layerInteraction.style,
+                    ),
+                    child: widget.child,
                   ),
-                  child: widget.child,
-                ),
+            ),
             if (children.isNotEmpty)
               Positioned(
                 top: 0,
@@ -291,7 +294,6 @@ class _LayerInteractionHelperWidgetState
                     ],
                   ),
                 ),
-
               ),
             if (widget.insideGroup == false)
               ReactiveWidget(
