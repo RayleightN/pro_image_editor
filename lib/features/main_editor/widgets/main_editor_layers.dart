@@ -225,7 +225,6 @@ class _MainEditorLayersState extends State<MainEditorLayers> {
   }
 
   void _handleSelectionRectChanged(Rect rect) {
-    if (_selectionRect == rect) return;
     _selectionRect = rect;
     widget.onSelectionRectChanged(rect);
     WidgetsBinding.instance.addPostFrameCallback((_) => setState(() {}));
