@@ -42,7 +42,7 @@ class RoundedBackgroundText extends StatelessWidget {
     this.outerRadius = kDefaultOuterRadius,
     this.onHitTestResult,
     this.enableHorizontalHitBox = true,
-  }) : text = TextSpan(text: text, style: style);
+  }) : text = _parseBulletText(text, baseStyle: style);
 
   /// Creates a rounded background text based on an [InlineSpan], that can have
   /// multiple styles
@@ -747,4 +747,39 @@ class LineMetricsHelper {
   String toString() {
     return 'LineMetricsHelper(x: $x, y: $y, w: $fullWidth, h: $fullHeight)';
   }
+}
+
+TextSpan _parseBulletText(
+  String text, {
+  TextStyle? baseStyle,
+  String fallbackBulletFont = 'Roboto',
+}) {
+  final bulletRegex = RegExp(r'(•)(\s*)([^\n]*)');
+  final spans = <TextSpan>[];
+  final lines = text.split('\n');
+
+  for (var line in lines) {
+    final match = bulletRegex.firstMatch(line);
+    if (match != null) {
+      spans.addAll([
+        TextSpan(
+          text: match.group(1), // the bullet
+          style: baseStyle?.copyWith(fontFamily: fallbackBulletFont),
+        ),
+        TextSpan(
+          text: match.group(2), // space after bullet
+          style: baseStyle,
+        ),
+        TextSpan(
+          text: match.group(3), // the text
+          style: baseStyle,
+        ),
+        const TextSpan(text: '\n'), // newline
+      ]);
+    } else {
+      spans.add(TextSpan(text: '$line\n', style: baseStyle));
+    }
+  }
+
+  return TextSpan(children: spans);
 }
