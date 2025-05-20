@@ -1190,7 +1190,7 @@ class ProImageEditorState extends State<ProImageEditor>
   /// based on the user's input.
   ///
   /// [layerData] - The text layer data to be edited.
-  void _onTextLayerTap(TextLayer layerData) async {
+  void onTextLayerTap(TextLayer layerData) async {
     TextLayer? layer = await openPage(
       TextEditor(
         key: textEditor,
@@ -2557,7 +2557,7 @@ class ProImageEditorState extends State<ProImageEditor>
       activeLayers: activeLayers,
       isSubEditorOpen: isSubEditorOpen,
       checkInteractiveViewer: _checkInteractiveViewer,
-      onTextLayerTap: _onTextLayerTap,
+      onTextLayerTap: onTextLayerTap,
       state: this,
       setTempLayer: _addTempLayer,
       onContextMenuToggled: (isOpen) {

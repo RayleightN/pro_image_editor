@@ -184,7 +184,7 @@ class _LayerInteractionHelperWidgetState
     List<LayerInteractionItem> children = widget.insideGroup
         ? []
         : widget.layerData.interaction.isLocked
-            ? [_buildUnlock()]
+            ? []
             : layerInteraction.widgets.children ?? _buildDefaultInteractions();
 
     final interactions = LayerItemInteractions(
@@ -363,21 +363,21 @@ class _LayerInteractionHelperWidgetState
     ];
   }
 
-  LayerInteractionItem _buildUnlock() {
-    return (rebuildStream, layer, interactions) => ReactiveWidget(
-          stream: rebuildStream,
-          builder: (_) => LayerInteractionButton(
-            rotation: -widget.layerData.rotation,
-            onTap: widget.onUnLockLayer,
-            buttonRadius: layerInteraction.style.buttonRadius,
-            cursor: layerInteraction.style.removeCursor,
-            icon: Icons.lock_open,
-            tooltip: i18n.layerInteraction.remove,
-            color: const Color(0xff1a6dff),
-            background: Colors.white,
-          ),
-        );
-  }
+  // LayerInteractionItem _buildUnlock() {
+  //   return (rebuildStream, layer, interactions) => ReactiveWidget(
+  //         stream: rebuildStream,
+  //         builder: (_) => LayerInteractionButton(
+  //           rotation: -widget.layerData.rotation,
+  //           onTap: widget.onUnLockLayer,
+  //           buttonRadius: layerInteraction.style.buttonRadius,
+  //           cursor: layerInteraction.style.removeCursor,
+  //           icon: Icons.lock_open,
+  //           tooltip: i18n.layerInteraction.remove,
+  //           color: const Color(0xff1a6dff),
+  //           background: Colors.white,
+  //         ),
+  //       );
+  // }
 
   Widget _buildRotateScaleIcon(LayerItemInteractions interactions) {
     return layerInteraction.widgets.rotateScaleButton?.call(
