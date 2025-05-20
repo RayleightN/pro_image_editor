@@ -1,5 +1,11 @@
 # Changelog
 
+## 9.9.0
+ - **FEAT**(Sticker-Editor): Added `builder` parameter to `StickerEditorConfigs`, which will replace `buildStickers` in the future. The new `builder` supports directly returning a `WidgetLayer` instead of just a `Widget`, enabling more flexibility and control.
+
+## 9.8.2
+ - **FIX**(Paint-Eraser): Resolved an issue where the layer eraser only worked when the user tapped on a layer.
+
 ## 9.8.1
  - **FIX**(Image-Generation): Resolved an issue that the image generation was slowly.
 
