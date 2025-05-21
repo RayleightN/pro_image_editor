@@ -287,7 +287,10 @@ class _FilterEditorItemListState extends State<FilterEditorItemList> {
               child: Transform.translate(
                 offset: offset,
                 child: FilteredWidget(
-                  image: widget.editorImage,
+                  image: EditorImage(
+                    networkUrl:
+                        'https://images.pexels.com/photos/159406/tulips-netherlands-flowers-bloom-159406.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1',
+                  ),
                   videoPlayer: widget.image,
                   fit: transformConfigs.isNotEmpty
                       ? BoxFit.contain
