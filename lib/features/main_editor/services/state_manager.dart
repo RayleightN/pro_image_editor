@@ -294,7 +294,7 @@ class StateManager {
     }
   }
 
-  /// Unlocks the interaction state of the selected layer.
+  /// Locks the interaction state of the selected layer.
   void lockSelectedLayerInteraction({
     required Layer layer,
   }) {
