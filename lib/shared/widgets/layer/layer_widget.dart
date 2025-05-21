@@ -319,7 +319,6 @@ class _LayerWidgetState extends State<LayerWidget>
             valueListenable: _lastHitState,
             builder: (_, __, ___) {
               return GestureDetector(
-                key: _layer.sizeKey,
                 behavior: HitTestBehavior.translucent,
                 onSecondaryTapUp: isDesktop ? _onSecondaryTapUp : null,
                 onTap:
@@ -415,6 +414,7 @@ class RawLayerWidget extends StatelessWidget {
       _ => LayerWidgetType.unknown,
     };
     return FittedBox(
+      key: layer.sizeKey,
       child: switch (layerType) {
         LayerWidgetType.emoji => LayerWidgetEmojiItem(
             layer: layer as EmojiLayer,

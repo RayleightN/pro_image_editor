@@ -206,7 +206,7 @@ class _LayerInteractionHelperWidgetState
           clipBehavior: Clip.none,
           children: [
             Container(
-              margin: const EdgeInsets.all(48),
+              margin: const EdgeInsets.all(40),
               child: layerInteraction.widgets.border
                       ?.call(widget.child, widget.layerData) ??
                   CustomPaint(

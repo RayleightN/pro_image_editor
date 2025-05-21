@@ -758,7 +758,8 @@ TextSpan _parseBulletText(
   final spans = <TextSpan>[];
   final lines = text.split('\n');
 
-  for (var line in lines) {
+  for (int i = 0; i < lines.length; i++) {
+    final line = lines[i];
     final match = bulletRegex.firstMatch(line);
     if (match != null) {
       spans.addAll([
@@ -774,10 +775,14 @@ TextSpan _parseBulletText(
           text: match.group(3), // the text
           style: baseStyle,
         ),
-        const TextSpan(text: '\n'), // newline
       ]);
     } else {
-      spans.add(TextSpan(text: '$line\n', style: baseStyle));
+      spans.add(TextSpan(text: line, style: baseStyle));
+    }
+
+    // Add newline after line unless it's the last line
+    if (i < lines.length - 1) {
+      spans.add(const TextSpan(text: '\n'));
     }
   }
 
