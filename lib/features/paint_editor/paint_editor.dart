@@ -5,6 +5,7 @@ import 'dart:math';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:pro_image_editor/core/utils/size_utils.dart';
 import 'package:pro_image_editor/shared/mixins/editor_zoom.mixin.dart';
 
 import '/core/constants/image_constants.dart';
@@ -822,10 +823,10 @@ class PaintEditorState extends State<PaintEditor>
                         configs: configs,
                         layers: layers!,
                         transformHelper: TransformHelper(
-                          mainBodySize:
-                              getMinimumSize(mainBodySize, editorBodySize),
-                          mainImageSize:
-                              getMinimumSize(mainImageSize, editorBodySize),
+                          mainBodySize: getValidSizeOrDefault(
+                              mainBodySize, editorBodySize),
+                          mainImageSize: getValidSizeOrDefault(
+                              mainImageSize, editorBodySize),
                           editorBodySize: editorBodySize,
                           transformConfigs: initialTransformConfigs,
                         ),
@@ -861,8 +862,8 @@ class PaintEditorState extends State<PaintEditor>
       configs: configs,
       transformConfigs: initialTransformConfigs ?? TransformConfigs.empty(),
       child: FilteredWidget(
-        width: getMinimumSize(mainImageSize, editorBodySize).width,
-        height: getMinimumSize(mainImageSize, editorBodySize).height,
+        width: getValidSizeOrDefault(mainImageSize, editorBodySize).width,
+        height: getValidSizeOrDefault(mainImageSize, editorBodySize).height,
         configs: configs,
         image: editorImage,
         videoPlayer: videoController?.videoPlayer,
