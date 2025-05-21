@@ -1325,7 +1325,8 @@ class ProImageEditorState extends State<ProImageEditor>
                           borderRadius: mainEditorConfigs
                               .style.subEditorPage.borderRadius,
                         ),
-                        child: page,)
+                        child: page,
+                      )
                     ),
                   ),
                 ],
