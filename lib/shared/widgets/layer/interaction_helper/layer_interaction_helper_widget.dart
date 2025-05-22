@@ -206,7 +206,7 @@ class _LayerInteractionHelperWidgetState
           clipBehavior: Clip.none,
           children: [
             Container(
-              margin: const EdgeInsets.all(40),
+              // padding: const EdgeInsets.only(bottom: 40),
               child: layerInteraction.widgets.border
                       ?.call(widget.child, widget.layerData) ??
                   CustomPaint(
@@ -299,7 +299,7 @@ class _LayerInteractionHelperWidgetState
               ReactiveWidget(
                 stream: _rebuildStream.stream,
                 builder: (_) => Positioned(
-                  bottom: 0,
+                  bottom: -40,
                   child: LayerInteractionButton(
                     rotation: -widget.layerData.rotation,
                     onScaleRotateDown: interactions.scaleRotateDown,
