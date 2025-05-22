@@ -2311,15 +2311,15 @@ class ProImageEditorState extends State<ProImageEditor>
     }
 
     addHistory(layers: layers);
-    layerInteractionManager.updateSelectedLayerIds(layers
-        .map((l) {
-          if (l.runtimeType == GroupLayer) {
-            return (l as GroupLayer).children.map((l) => l.id).toList();
-          }
-          return [l.id];
-        })
-        .expand((l) => l)
-        .toList());
+    // layerInteractionManager.updateSelectedLayerIds(layers
+    //     .map((l) {
+    //       if (l.runtimeType == GroupLayer) {
+    //         return (l as GroupLayer).children.map((l) => l.id).toList();
+    //       }
+    //       return [l.id];
+    //     })
+    //     .expand((l) => l)
+    //     .toList());
     _controllers.uiLayerCtrl.add(null);
     setState(() {});
   }
