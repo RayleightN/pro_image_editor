@@ -65,7 +65,7 @@ class _WhatsAppDoneBtnState extends State<WhatsAppDoneBtn> {
     return CupertinoButton(
       onPressed: widget.onPressed,
       padding: const EdgeInsets.symmetric(horizontal: 7),
-      minimumSize: Size.zero,
+      minSize: 0,
       child: Text(
         widget.configs.i18n.done,
         style: TextStyle(
