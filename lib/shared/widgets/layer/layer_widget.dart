@@ -281,15 +281,10 @@ class _LayerWidgetState extends State<LayerWidget>
       left: offsetX,
       child: FractionalTranslation(
         translation: const Offset(-0.5, -0.5),
-        child: Hero(
-          // Important that hero is above transform
-          createRectTween: (begin, end) => RectTween(begin: begin, end: end),
-          tag: widget.layerData.id,
-          child: Transform(
-            transform: transformMatrix,
-            alignment: Alignment.center,
-            child: _buildInteractionHandlers(),
-          ),
+        child: Transform(
+          transform: transformMatrix,
+          alignment: Alignment.center,
+          child: _buildInteractionHandlers(),
         ),
       ),
     );
@@ -414,7 +409,6 @@ class RawLayerWidget extends StatelessWidget {
       _ => LayerWidgetType.unknown,
     };
     return FittedBox(
-      key: layer.sizeKey,
       child: switch (layerType) {
         LayerWidgetType.emoji => LayerWidgetEmojiItem(
             layer: layer as EmojiLayer,

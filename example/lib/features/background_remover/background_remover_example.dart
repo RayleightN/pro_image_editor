@@ -128,58 +128,58 @@ class _BackgroundRemoverExampleState extends State<BackgroundRemoverExample>
   MainEditorWidgets _buildBodyItems() {
     return MainEditorWidgets(
       bodyItems: (editor, rebuildStream) {
+        final hasSelectedLayer =
+            editor.layerInteractionManager.selectedLayerIds.isNotEmpty;
         return [
           ReactiveWidget(
             stream: rebuildStream,
-            builder: (_) =>
-                editor.selectedLayerIndex >= 0 || editor.isSubEditorOpen
-                    ? const SizedBox.shrink()
-                    : Positioned(
-                        bottom: 20,
-                        left: 0,
-                        child: Container(
-                          decoration: BoxDecoration(
-                            color: Colors.blue.shade700,
-                            borderRadius: const BorderRadius.only(
-                              topRight: Radius.circular(100),
-                              bottomRight: Radius.circular(100),
-                            ),
-                          ),
-                          child: IconButton(
-                            onPressed: _removeBackground,
-                            icon: const Icon(
-                              Icons.content_cut,
-                              color: Colors.white,
-                            ),
-                          ),
+            builder: (_) => hasSelectedLayer || editor.isSubEditorOpen
+                ? const SizedBox.shrink()
+                : Positioned(
+                    bottom: 20,
+                    left: 0,
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: Colors.blue.shade700,
+                        borderRadius: const BorderRadius.only(
+                          topRight: Radius.circular(100),
+                          bottomRight: Radius.circular(100),
                         ),
                       ),
+                      child: IconButton(
+                        onPressed: _removeBackground,
+                        icon: const Icon(
+                          Icons.content_cut,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                  ),
           ),
           ReactiveWidget(
             stream: rebuildStream,
-            builder: (_) =>
-                editor.selectedLayerIndex >= 0 || editor.isSubEditorOpen
-                    ? const SizedBox.shrink()
-                    : Positioned(
-                        bottom: 20,
-                        right: 0,
-                        child: Container(
-                          decoration: BoxDecoration(
-                            color: Colors.green.shade700,
-                            borderRadius: const BorderRadius.only(
-                              topLeft: Radius.circular(100),
-                              bottomLeft: Radius.circular(100),
-                            ),
-                          ),
-                          child: IconButton(
-                            onPressed: _openPicker,
-                            icon: const Icon(
-                              Icons.image,
-                              color: Colors.white,
-                            ),
-                          ),
+            builder: (_) => hasSelectedLayer || editor.isSubEditorOpen
+                ? const SizedBox.shrink()
+                : Positioned(
+                    bottom: 20,
+                    right: 0,
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: Colors.green.shade700,
+                        borderRadius: const BorderRadius.only(
+                          topLeft: Radius.circular(100),
+                          bottomLeft: Radius.circular(100),
                         ),
                       ),
+                      child: IconButton(
+                        onPressed: _openPicker,
+                        icon: const Icon(
+                          Icons.image,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                  ),
           ),
         ];
       },

@@ -132,9 +132,6 @@ class Layer {
   /// widget tree.
   GlobalKey key = GlobalKey();
 
-  /// Global key associated with the Layer widget.
-  GlobalKey sizeKey = GlobalKey();
-
   /// The position offset of the widget.
   Offset offset;
 
