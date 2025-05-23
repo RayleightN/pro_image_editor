@@ -22,7 +22,7 @@ enum SubEditor {
   /// Represents the sticker sub-editor.
   sticker,
 
-  /// Represents the sticker sub-editor.
+  /// Represents the Tune sub-editor.
   tune,
 
   /// Represents an unknown sub-editor.
