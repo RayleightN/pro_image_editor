@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import '/core/utils/size_utils.dart';
 
 import '/core/models/editor_callbacks/pro_image_editor_callbacks.dart';
 import '/core/models/editor_configs/pro_image_editor_configs.dart';
 import '/core/models/layers/layer.dart';
+import '/core/utils/size_utils.dart';
 import '/features/main_editor/controllers/main_editor_controllers.dart';
 import '/features/main_editor/services/layer_interaction_manager.dart';
 import '/features/main_editor/services/sizes_manager.dart';
@@ -13,7 +13,6 @@ import '/shared/utils/unique_id_generator.dart';
 import '/shared/widgets/extended/mouse_region/extended_rebuild_mouse_region.dart';
 import '/shared/widgets/layer/layer_widget.dart';
 import '../main_editor.dart';
-
 
 /// A widget that manages and displays layers in the main editor, handling
 /// interactions, configurations, and callbacks for user actions.
@@ -244,8 +243,8 @@ class _MainEditorLayersState extends State<MainEditorLayers> {
 
   /// Builds a single layer widget
   Widget _buildLayerWidget(MapEntry<int, Layer> entry) {
-    var bodySize = 
-      getValidSizeOrDefault(widget.sizesManager.bodySize, editorBodySize);
+    var bodySize =
+        getValidSizeOrDefault(widget.sizesManager.bodySize, editorBodySize);
 
     int index = entry.key;
     Layer layer = entry.value;
