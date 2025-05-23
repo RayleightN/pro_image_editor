@@ -300,18 +300,19 @@ class _LayerInteractionHelperWidgetState
                 stream: _rebuildStream.stream,
                 builder: (_) => Positioned(
                   bottom: -40,
-                  child: LayerInteractionButton(
-                    rotation: -widget.layerData.rotation,
-                    onScaleRotateDown: interactions.scaleRotateDown,
-                    onScaleRotateUp: interactions.scaleRotateUp,
-                    buttonRadius: layerInteraction.style.buttonRadius,
-                    cursor: layerInteraction.style.rotateScaleCursor,
-                    icon: Icons.sync,
-                    tooltip: i18n.layerInteraction.rotateScale,
-                    color: layerInteraction.style.buttonScaleRotateColor,
-                    background:
-                        layerInteraction.style.buttonScaleRotateBackground,
-                  ),
+                  child: _buildRotateScaleIcon(interactions),
+                  // child: LayerInteractionButton(
+                  //   rotation: -widget.layerData.rotation,
+                  //   onScaleRotateDown: interactions.scaleRotateDown,
+                  //   onScaleRotateUp: interactions.scaleRotateUp,
+                  //   buttonRadius: layerInteraction.style.buttonRadius,
+                  //   cursor: layerInteraction.style.rotateScaleCursor,
+                  //   icon: Icons.sync,
+                  //   tooltip: i18n.layerInteraction.rotateScale,
+                  //   color: layerInteraction.style.buttonScaleRotateColor,
+                  //   background:
+                  //       layerInteraction.style.buttonScaleRotateBackground,
+                  // ),
                 ),
               ),
             // ...children.map(

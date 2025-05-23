@@ -52,6 +52,7 @@ class LayerInteractionButton extends StatelessWidget {
     required this.tooltip,
     required this.color,
     required this.background,
+    this.child,
   });
 
   /// Callback for handling pointer down events associated with scale and
@@ -113,6 +114,9 @@ class LayerInteractionButton extends StatelessWidget {
   /// based on design requirements.
   final Color color;
 
+  /// display the child icon
+  final Widget? child;
+
   @override
   Widget build(BuildContext context) {
     return Transform.rotate(
@@ -132,11 +136,12 @@ class LayerInteractionButton extends StatelessWidget {
                   borderRadius: BorderRadius.circular(buttonRadius * 2),
                   color: background,
                 ),
-                child: Icon(
-                  icon,
-                  color: color,
-                  size: buttonRadius * 2,
-                ),
+                child: child ??
+                    Icon(
+                      icon,
+                      color: color,
+                      size: buttonRadius * 2,
+                    ),
               ),
             ),
           ),
