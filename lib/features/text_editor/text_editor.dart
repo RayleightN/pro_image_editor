@@ -128,6 +128,7 @@ class TextEditorState extends State<TextEditor>
     textEditorCallbacks?.onInit?.call();
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
       textEditorCallbacks?.onAfterViewInit?.call();
+      focusNode.requestFocus();
     });
   }
 

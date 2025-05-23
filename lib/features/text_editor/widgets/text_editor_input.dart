@@ -93,7 +93,9 @@ class TextEditorInput extends StatelessWidget {
     void animationStatusListener(AnimationStatus status) {
       if (status == AnimationStatus.completed) {
         WidgetsBinding.instance.addPostFrameCallback((_) {
-          focusNode.requestFocus();
+          if (!focusNode.hasFocus && focusNode.canRequestFocus) {
+            focusNode.requestFocus();
+          }
         });
         animation.removeStatusListener(animationStatusListener);
       }
