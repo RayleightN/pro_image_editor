@@ -316,11 +316,13 @@ class _LayerWidgetState extends State<LayerWidget>
               return GestureDetector(
                 behavior: HitTestBehavior.translucent,
                 onSecondaryTapUp: isDesktop ? _onSecondaryTapUp : null,
-                onTap:
-                    (interaction.enableSelection || interaction.enableEdit) &&
-                            !_isOutsideHitBox()
-                        ? _onTap
-                        : null,
+                onTap: () {
+                  if ((interaction.enableSelection || interaction.enableEdit) &&
+                      !_isOutsideHitBox()) {
+                    _onTap();
+                  }
+                  // _onTap();
+                },
                 child: Listener(
                   behavior: HitTestBehavior.translucent,
                   onPointerDown: _onPointerDown,

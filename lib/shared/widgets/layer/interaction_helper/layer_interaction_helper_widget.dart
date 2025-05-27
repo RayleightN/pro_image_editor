@@ -295,7 +295,8 @@ class _LayerInteractionHelperWidgetState
                   ),
                 ),
               ),
-            if (widget.insideGroup == false)
+            if (widget.insideGroup == false &&
+                !widget.layerData.interaction.isLocked)
               ReactiveWidget(
                 stream: _rebuildStream.stream,
                 builder: (_) => Positioned(

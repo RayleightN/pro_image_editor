@@ -238,8 +238,8 @@ class _MainEditorLayersState extends State<MainEditorLayers> {
   @override
   Widget build(BuildContext context) {
     return IgnorePointer(
-      ignoring: widget.layerInteractionManager.selectedLayerIds.isNotEmpty,
-      // ignoring: false,
+      // ignoring: widget.layerInteractionManager.selectedLayerIds.isNotEmpty,
+      ignoring: false,
       child: StreamBuilder<bool>(
         stream: widget.controllers.layerHeroResetCtrl.stream,
         initialData: false,
