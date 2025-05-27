@@ -185,7 +185,7 @@ class WidgetLayer extends Layer {
       flipX: flipX ?? this.flipX,
       flipY: flipY ?? this.flipY,
       interaction: interaction ?? this.interaction,
-      exportConfigs: exportConfigs ?? this.exportConfigs
+      exportConfigs: exportConfigs ?? this.exportConfigs,
     );
   }
 }
