@@ -39,6 +39,7 @@ class TuneEditorBottombar extends StatefulWidget {
     required this.state,
     required this.onSelect,
     required this.selectedIndex,
+    required this.slider,
   });
 
   /// Configuration settings for the tune editor.
@@ -74,6 +75,9 @@ class TuneEditorBottombar extends StatefulWidget {
   /// Callback triggered when a tune adjustment item is selected.
   final Function(int index) onSelect;
 
+  /// slider widget
+  final Widget slider;
+
   @override
   State<TuneEditorBottombar> createState() => _TuneEditorBottombarState();
 }
@@ -83,16 +87,16 @@ class _TuneEditorBottombarState extends State<TuneEditorBottombar> {
 
   final _iconSize = 22.0;
 
-  late final ValueNotifier<double> _sliderValue = ValueNotifier(
-    widget.tuneAdjustmentMatrix[widget.selectedIndex].value,
-  );
+  // late final ValueNotifier<double> _sliderValue = ValueNotifier(
+  //   widget.tuneAdjustmentMatrix[widget.selectedIndex].value,
+  // );
 
-  @override
-  void didUpdateWidget(covariant TuneEditorBottombar oldWidget) {
-    _sliderValue.value =
-        widget.tuneAdjustmentMatrix[widget.selectedIndex].value;
-    super.didUpdateWidget(oldWidget);
-  }
+  // @override
+  // void didUpdateWidget(covariant TuneEditorBottombar oldWidget) {
+  //   _sliderValue.value =
+  //       widget.tuneAdjustmentMatrix[widget.selectedIndex].value;
+  //   super.didUpdateWidget(oldWidget);
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -105,7 +109,7 @@ class _TuneEditorBottombarState extends State<TuneEditorBottombar> {
           mainAxisAlignment: MainAxisAlignment.center,
           spacing: 4,
           children: [
-            _buildSlider(),
+            widget.slider,
             _buildItems(),
           ],
         ),
@@ -113,46 +117,46 @@ class _TuneEditorBottombarState extends State<TuneEditorBottombar> {
     );
   }
 
-  Widget _buildSlider() {
-    var activeOption = widget.tuneAdjustmentList[widget.selectedIndex];
-    return ConstrainedBox(
-      constraints: const BoxConstraints(maxWidth: 800),
-      child: RepaintBoundary(
-        child: SizedBox(
-          height: 40,
-          child: ValueListenableBuilder(
-              valueListenable: _sliderValue,
-              builder: (_, value, __) {
-                return widget.tuneEditorConfigs.widgets.slider?.call(
-                      widget.state,
-                      widget.rebuildController.stream,
-                      value,
-                      widget.onChanged,
-                      widget.onChangedEnd,
-                    ) ??
-                    Slider(
-                      min: activeOption.min,
-                      max: activeOption.max,
-                      divisions: activeOption.divisions,
-                      label: (value * activeOption.labelMultiplier)
-                          .round()
-                          .toString(),
-                      value: value,
-                      onChangeStart: (val) {
-                        _sliderValue.value = val;
-                        widget.onChangedStart(val);
-                      },
-                      onChanged: (val) {
-                        _sliderValue.value = val;
-                        widget.onChanged(val);
-                      },
-                      onChangeEnd: widget.onChangedEnd,
-                    );
-              }),
-        ),
-      ),
-    );
-  }
+  // Widget _buildSlider() {
+  //   var activeOption = widget.tuneAdjustmentList[widget.selectedIndex];
+  //   return ConstrainedBox(
+  //     constraints: const BoxConstraints(maxWidth: 800),
+  //     child: RepaintBoundary(
+  //       child: SizedBox(
+  //         height: 40,
+  //         child: ValueListenableBuilder(
+  //             valueListenable: _sliderValue,
+  //             builder: (_, value, __) {
+  //               return widget.tuneEditorConfigs.widgets.slider?.call(
+  //                     widget.state,
+  //                     widget.rebuildController.stream,
+  //                     value,
+  //                     widget.onChanged,
+  //                     widget.onChangedEnd,
+  //                   ) ??
+  //                   Slider(
+  //                     min: activeOption.min,
+  //                     max: activeOption.max,
+  //                     divisions: activeOption.divisions,
+  //                     label: (value * activeOption.labelMultiplier)
+  //                         .round()
+  //                         .toString(),
+  //                     value: value,
+  //                     onChangeStart: (val) {
+  //                       _sliderValue.value = val;
+  //                       widget.onChangedStart(val);
+  //                     },
+  //                     onChanged: (val) {
+  //                       _sliderValue.value = val;
+  //                       widget.onChanged(val);
+  //                     },
+  //                     onChangeEnd: widget.onChangedEnd,
+  //                   );
+  //             }),
+  //       ),
+  //     ),
+  //   );
+  // }
 
   Widget _buildItems() {
     return SizedBox(

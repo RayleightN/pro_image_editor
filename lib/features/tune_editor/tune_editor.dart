@@ -368,7 +368,7 @@ class TuneEditorState extends State<TuneEditor>
 
   /// Handles the end of changes in the tune factor value.
   void onChangedEnd(double value) {
-    setState(() {});
+    uiStream.add(null);
 
     tuneEditorCallbacks?.handleTuneFactorChangeEnd(tuneAdjustmentMatrix);
     WidgetsBinding.instance.addPostFrameCallback((_) async {
@@ -520,6 +520,41 @@ class TuneEditorState extends State<TuneEditor>
         });
       },
       selectedIndex: selectedIndex,
+      slider: _buildSlider(),
+    );
+  }
+
+  Widget _buildSlider() {
+    var activeOption = tuneAdjustmentList[selectedIndex];
+    final selectedItem = tuneAdjustmentMatrix[selectedIndex];
+    int index =
+        tuneAdjustmentMatrix.indexWhere((item) => item.id == selectedItem.id);
+    return ConstrainedBox(
+      constraints: const BoxConstraints(maxWidth: 800),
+      child: RepaintBoundary(
+        child: StreamBuilder(
+            stream: uiStream.stream,
+            builder: (context, snapshot) {
+              return SizedBox(
+                height: 40,
+                child: tuneEditorConfigs.widgets.slider?.call(
+                      this,
+                      rebuildController.stream,
+                      tuneAdjustmentMatrix[index].value,
+                      onChanged,
+                      onChangedEnd,
+                    ) ??
+                    Slider(
+                      min: activeOption.min,
+                      max: activeOption.max,
+                      divisions: activeOption.divisions,
+                      value: tuneAdjustmentMatrix[index].value,
+                      onChanged: onChanged,
+                      onChangeEnd: onChangedEnd,
+                    ),
+              );
+            }),
+      ),
     );
   }
 }
