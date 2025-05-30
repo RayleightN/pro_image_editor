@@ -1,5 +1,8 @@
 # Changelog
 
+## 9.11.0
+- **FEAT**(video-editor): Added new parameters to `CompleteParameters` required for extending the editor with video editing.
+
 ## 9.10.1
 - **FIX**(double-tap): Resolve issue where double tapping still zooms even when `enableZoom` is set to `false`. This resolves issue [#484](https://github.com/hm21/pro_image_editor/issues/484).
 
