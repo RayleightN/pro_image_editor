@@ -1,5 +1,8 @@
 # Changelog
 
+## 9.11.2
+- **FIX**(bottom-sheet): Wrap bottom sheets in `SafeArea` to ensure proper display within device safe zones.
+
 ## 9.11.1
 - **FIX**(video-editor): Add missing `image` parameter to `GroundedFilterBar`.
 

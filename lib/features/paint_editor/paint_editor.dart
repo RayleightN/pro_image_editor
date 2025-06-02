@@ -405,25 +405,23 @@ class PaintEditorState extends State<PaintEditor>
     showModalBottomSheet(
       context: context,
       backgroundColor: paintEditorConfigs.style.lineWidthBottomSheetBackground,
-      builder: (BuildContext context) {
-        return SliderBottomSheet<PaintEditorState>(
-          title: i18n.paintEditor.lineWidth,
-          headerTextStyle: paintEditorConfigs.style.lineWidthBottomSheetTitle,
-          min: 2,
-          max: 40,
-          divisions: 19,
-          closeButton: paintEditorConfigs.widgets.lineWidthCloseButton,
-          customSlider: paintEditorConfigs.widgets.sliderLineWidth,
-          state: this,
-          value: paintCtrl.strokeWidth,
-          designMode: designMode,
-          theme: theme,
-          rebuildController: rebuildController,
-          onValueChanged: (value) {
-            setStrokeWidth(value);
-          },
-        );
-      },
+      builder: (BuildContext context) => SliderBottomSheet<PaintEditorState>(
+        title: i18n.paintEditor.lineWidth,
+        headerTextStyle: paintEditorConfigs.style.lineWidthBottomSheetTitle,
+        min: 2,
+        max: 40,
+        divisions: 19,
+        closeButton: paintEditorConfigs.widgets.lineWidthCloseButton,
+        customSlider: paintEditorConfigs.widgets.sliderLineWidth,
+        state: this,
+        value: paintCtrl.strokeWidth,
+        designMode: designMode,
+        theme: theme,
+        rebuildController: rebuildController,
+        onValueChanged: (value) {
+          setStrokeWidth(value);
+        },
+      ),
     );
   }
 
@@ -431,26 +429,23 @@ class PaintEditorState extends State<PaintEditor>
   void openOpacityBottomSheet() {
     showModalBottomSheet(
       context: context,
-      backgroundColor: paintEditorConfigs.style.opacityBottomSheetBackground,
-      builder: (BuildContext context) {
-        return SliderBottomSheet<PaintEditorState>(
-          title: i18n.paintEditor.changeOpacity,
-          headerTextStyle: paintEditorConfigs.style.opacityBottomSheetTitle,
-          max: 1,
-          min: 0,
-          divisions: 100,
-          closeButton: paintEditorConfigs.widgets.changeOpacityCloseButton,
-          customSlider: paintEditorConfigs.widgets.sliderChangeOpacity,
-          state: this,
-          value: paintCtrl.opacity,
-          designMode: designMode,
-          theme: theme,
-          rebuildController: rebuildController,
-          onValueChanged: (value) {
-            setOpacity(value);
-          },
-        );
-      },
+      builder: (BuildContext context) => SliderBottomSheet<PaintEditorState>(
+        title: i18n.paintEditor.changeOpacity,
+        headerTextStyle: paintEditorConfigs.style.opacityBottomSheetTitle,
+        max: 1,
+        min: 0,
+        divisions: 100,
+        closeButton: paintEditorConfigs.widgets.changeOpacityCloseButton,
+        customSlider: paintEditorConfigs.widgets.sliderChangeOpacity,
+        state: this,
+        value: paintCtrl.opacity,
+        designMode: designMode,
+        theme: theme,
+        rebuildController: rebuildController,
+        onValueChanged: (value) {
+          setOpacity(value);
+        },
+      ),
     );
   }
 
