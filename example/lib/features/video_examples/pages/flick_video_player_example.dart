@@ -39,7 +39,7 @@ class _FlickVideoPlayerExampleState extends State<FlickVideoPlayerExample>
 
   void _initializePlayer() async {
     generateThumbnails();
-    video = EditorVideo(assetPath: kVideoEditorExampleAssetPath);
+    video = EditorVideo.asset(kVideoEditorExampleAssetPath);
 
     _flickManager = FlickManager(
       videoPlayerController:
@@ -67,6 +67,7 @@ class _FlickVideoPlayerExampleState extends State<FlickVideoPlayerExample>
       initialResolution: videoMetadata.resolution,
       videoDuration: videoMetadata.duration,
       fileSize: videoMetadata.fileSize,
+      bitrate: videoMetadata.bitrate,
       thumbnails: thumbnails,
     );
     _flickManager.flickVideoManager!.videoPlayerController!
@@ -145,7 +146,7 @@ class _FlickVideoPlayerExampleState extends State<FlickVideoPlayerExample>
                 dialogConfigs: DialogConfigs(
                   widgets: DialogWidgets(
                     loadingDialog: (message, configs) =>
-                        const VideoProgressAlert(),
+                        VideoProgressAlert(taskId: taskId),
                   ),
                 ),
                 mainEditor: MainEditorConfigs(

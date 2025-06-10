@@ -62,6 +62,7 @@ class LayerInteractionHelperWidget extends StatefulWidget
     this.callbacks = const ProImageEditorCallbacks(),
     this.insideGroup = false,
     required this.onUnLockLayer,
+    this.forceIgnoreGestures = false,
   });
 
   /// The configuration settings for the image editor.
@@ -122,6 +123,13 @@ class LayerInteractionHelperWidget extends StatefulWidget
   /// tooltips.
   final bool isInteractive;
 
+  /// Determines whether gesture interactions should be forcibly ignored.
+  ///
+  /// When set to `true`, all gesture interactions with the associated widget
+  /// will be ignored, regardless of other conditions. This can be useful in
+  /// scenarios where you want to temporarily disable user interaction.
+  final bool forceIgnoreGestures;
+
   /// Indicates whether the layer is selected.
   ///
   /// If true, the layer is highlighted, and interaction buttons are displayed.
@@ -164,6 +172,11 @@ class _LayerInteractionHelperWidgetState
 
   @override
   Widget build(BuildContext context) {
+    if (widget.forceIgnoreGestures) {
+      return IgnorePointer(
+          ignoring: widget.forceIgnoreGestures, child: widget.child);
+    }
+
     String layerId = widget.layerData.id;
     var deferManager = DeferManager.maybeOf(context);
 

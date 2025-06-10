@@ -3,7 +3,6 @@ import 'dart:typed_data';
 import 'package:example/core/constants/example_constants.dart';
 import 'package:example/features/preview/preview_video.dart';
 import 'package:flutter/material.dart';
-import 'package:pro_image_editor/core/models/complete_parameters.dart';
 import 'package:pro_image_editor/pro_image_editor.dart';
 import 'package:pro_video_editor/pro_video_editor.dart';
 
@@ -44,7 +43,7 @@ mixin VideoEditorMixin<T extends StatefulWidget> on State<T> {
   final int thumbnailCount = 10;
 
   /// The video currently loaded in the editor.
-  EditorVideo video = EditorVideo(assetPath: kVideoEditorExampleAssetPath);
+  EditorVideo video = EditorVideo.asset(kVideoEditorExampleAssetPath);
 
   /// The result of the video export process, if completed.
   Uint8List? exportedVideo;
@@ -52,9 +51,21 @@ mixin VideoEditorMixin<T extends StatefulWidget> on State<T> {
   /// The duration it took to generate the exported video.
   Duration videoGenerationTime = Duration.zero;
 
+  /// The task ID used for rendering the video.
+  /// It's optional, but when multiple operations run simultaneously,
+  /// it allows tracking each task individually.
+  final taskId = DateTime.now().microsecondsSinceEpoch.toString();
+
+  @override
+  void dispose() {
+    proVideoController?.dispose();
+
+    super.dispose();
+  }
+
   /// Loads and sets [videoMetadata] for the given [video].
   Future<void> setMetadata() async {
-    videoMetadata = await VideoUtilsService.instance.getVideoInformation(video);
+    videoMetadata = await ProVideoEditor.instance.getMetadata(video);
   }
 
   /// Generates thumbnails for the given [video].
@@ -67,7 +78,7 @@ mixin VideoEditorMixin<T extends StatefulWidget> on State<T> {
 
       /// `getKeyFrames` is faster than `getThumbnails` but the timestamp is
       /// more "random".
-      var thumbnailList = await VideoUtilsService.instance.getKeyFrames(
+      var thumbnailList = await ProVideoEditor.instance.getKeyFrames(
         KeyFramesConfigs(
           video: video,
           outputSize: Size.square(imageWidth),
@@ -99,28 +110,30 @@ mixin VideoEditorMixin<T extends StatefulWidget> on State<T> {
   Future<void> generateVideo(CompleteParameters parameters) async {
     final stopwatch = Stopwatch()..start();
 
-    var videoBytes = await video.safeByteArray();
-
     var exportModel = RenderVideoModel(
-      videoBytes: videoBytes,
-      imageBytes: parameters.image,
+      id: taskId,
+      video: video,
+      imageBytes: parameters.layers.isNotEmpty ? parameters.image : null,
       blur: parameters.blur,
       colorMatrixList: parameters.colorFilters,
       startTime: parameters.startTime,
       endTime: parameters.endTime,
-      transform: ExportTransform(
-        width: parameters.cropWidth,
-        height: parameters.cropHeight,
-        rotateTurns: 4 - parameters.rotateTurns,
-        x: parameters.cropX,
-        y: parameters.cropY,
-        flipX: parameters.flipX,
-        flipY: parameters.flipY,
-      ),
+      transform: parameters.isTransformed
+          ? ExportTransform(
+              width: parameters.cropWidth,
+              height: parameters.cropHeight,
+              rotateTurns: 4 - parameters.rotateTurns,
+              x: parameters.cropX,
+              y: parameters.cropY,
+              flipX: parameters.flipX,
+              flipY: parameters.flipY,
+            )
+          : null,
       enableAudio: proVideoController?.isAudioEnabled ?? true,
       outputFormat: outputFormat,
+      bitrate: videoMetadata.bitrate,
     );
-    exportedVideo = await VideoUtilsService.instance.renderVideo(exportModel);
+    exportedVideo = await ProVideoEditor.instance.renderVideo(exportModel);
     videoGenerationTime = stopwatch.elapsed;
   }
 

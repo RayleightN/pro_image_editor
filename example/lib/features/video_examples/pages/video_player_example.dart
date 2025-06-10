@@ -58,6 +58,7 @@ class _VideoPlayerExampleState extends State<VideoPlayerExample>
       initialResolution: videoMetadata.resolution,
       videoDuration: videoMetadata.duration,
       fileSize: videoMetadata.fileSize,
+      bitrate: videoMetadata.bitrate,
       thumbnails: thumbnails,
     );
 
@@ -138,7 +139,8 @@ class _VideoPlayerExampleState extends State<VideoPlayerExample>
       configs: ProImageEditorConfigs(
         dialogConfigs: DialogConfigs(
           widgets: DialogWidgets(
-            loadingDialog: (message, configs) => const VideoProgressAlert(),
+            loadingDialog: (message, configs) =>
+                VideoProgressAlert(taskId: taskId),
           ),
         ),
         mainEditor: MainEditorConfigs(

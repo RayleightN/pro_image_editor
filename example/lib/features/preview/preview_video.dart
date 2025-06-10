@@ -49,10 +49,16 @@ class _PreviewVideoState extends State<PreviewVideo> {
   void initState() {
     super.initState();
 
-    _videoMetadata = VideoUtilsService.instance.getVideoInformation(EditorVideo(
-      byteArray: widget.bytes,
+    _videoMetadata = ProVideoEditor.instance.getMetadata(EditorVideo.memory(
+      widget.bytes,
     ));
     _initializePlayer();
+  }
+
+  @override
+  void dispose() {
+    _player.dispose();
+    super.dispose();
   }
 
   void _initializePlayer() async {
@@ -176,7 +182,7 @@ class _PreviewVideoState extends State<PreviewVideo> {
                       ]),
                       tableSpace,
                       TableRow(children: [
-                        const Text('Image-Size'),
+                        const Text('Video-Size'),
                         Padding(
                           padding: const EdgeInsets.only(left: 8.0),
                           child: Text(

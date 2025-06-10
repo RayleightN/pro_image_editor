@@ -42,7 +42,7 @@ class _VideoMediaKitExampleState extends State<VideoMediaKitExample>
 
   void _initializePlayer() async {
     generateThumbnails();
-    video = EditorVideo(assetPath: kVideoEditorExampleAssetPath);
+    video = EditorVideo.asset(kVideoEditorExampleAssetPath);
 
     await Future.wait([
       setMetadata(),
@@ -88,6 +88,7 @@ class _VideoMediaKitExampleState extends State<VideoMediaKitExample>
       initialResolution: videoMetadata.resolution,
       videoDuration: videoMetadata.duration,
       fileSize: videoMetadata.fileSize,
+      bitrate: videoMetadata.bitrate,
       thumbnails: thumbnails,
     );
 
@@ -148,7 +149,7 @@ class _VideoMediaKitExampleState extends State<VideoMediaKitExample>
                 dialogConfigs: DialogConfigs(
                   widgets: DialogWidgets(
                     loadingDialog: (message, configs) =>
-                        const VideoProgressAlert(),
+                        VideoProgressAlert(taskId: taskId),
                   ),
                 ),
                 mainEditor: MainEditorConfigs(

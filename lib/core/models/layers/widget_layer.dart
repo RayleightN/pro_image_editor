@@ -175,6 +175,7 @@ class WidgetLayer extends Layer {
     bool? flipY,
     LayerInteraction? interaction,
     bool? insideGroup,
+    WidgetLayerExportConfigs? exportConfigs,
   }) {
     return WidgetLayer(
       widget: widget ?? this.widget,
@@ -185,6 +186,7 @@ class WidgetLayer extends Layer {
       flipX: flipX ?? this.flipX,
       flipY: flipY ?? this.flipY,
       interaction: interaction ?? this.interaction,
+      exportConfigs: exportConfigs ?? this.exportConfigs,
     );
   }
 }
