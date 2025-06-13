@@ -92,7 +92,7 @@ class ImageRenderService {
       ui.Image image = await _convertToDartUiImage(
         boundary,
         imageInfos,
-        pixelRatio,
+        10.0,
       );
 
       return image;
