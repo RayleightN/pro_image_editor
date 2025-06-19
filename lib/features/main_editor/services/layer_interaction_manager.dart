@@ -132,6 +132,12 @@ class LayerInteractionManager {
     onSelectedLayerChanged?.call(_selectedLayerIds);
   }
 
+  /// Indicates whether the layer interaction manager is currently updating.
+  bool isUpdating = false;
+
+  /// Indicates whether the layer interaction manager is in rotate mode.
+  bool isModeRotate = false;
+
   /// Adds a layer ID to the list of selected layers.
   ///
   /// If [index] is provided, the layer will be inserted at that index.
@@ -408,11 +414,11 @@ class LayerInteractionManager {
     _activeScale = true;
 
     for (var activeLayer in activeLayers) {
-      if (activeLayer.interaction.enableScale) {
+      if (activeLayer.interaction.enableScale && !isModeRotate) {
         activeLayer.scale = baseScaleFactor[activeLayer.id]! * detail.scale;
         _setMinMaxScaleFactor(configs, activeLayer);
       }
-      if (activeLayer.interaction.enableRotate) {
+      if (activeLayer.interaction.enableRotate && isModeRotate) {
         activeLayer.rotation =
             baseAngleFactor[activeLayer.id]! + detail.rotation;
 

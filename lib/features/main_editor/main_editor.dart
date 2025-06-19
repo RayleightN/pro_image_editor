@@ -1082,6 +1082,8 @@ class ProImageEditorState extends State<ProImageEditor>
   /// layer's position and properties.
   void _onScaleUpdate(ScaleUpdateDetails details) {
     mainEditorCallbacks?.handleScaleUpdate(details);
+    layerInteractionManager.isUpdating = true;
+    setState(() {});
     // if (selectedLayerIndexes.isEmpty || blockOnScaleUpdateFunction) return;
     if (layerInteractionManager.selectedLayerIds.isEmpty ||
         blockOnScaleUpdateFunction) {
@@ -1179,7 +1181,9 @@ class ProImageEditorState extends State<ProImageEditor>
       _updateTempLayer();
     }
 
-    layerInteractionManager.onScaleEnd();
+    layerInteractionManager
+      ..onScaleEnd()
+      ..isUpdating = false;
     setState(() {});
   }
 

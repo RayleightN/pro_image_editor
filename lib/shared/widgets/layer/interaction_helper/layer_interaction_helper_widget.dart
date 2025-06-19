@@ -308,27 +308,27 @@ class _LayerInteractionHelperWidgetState
                   ),
                 ),
               ),
-            if (widget.insideGroup == false &&
-                !widget.layerData.interaction.isLocked)
-              ReactiveWidget(
-                stream: _rebuildStream.stream,
-                builder: (_) => Positioned(
-                  bottom: -40,
-                  child: _buildRotateScaleIcon(interactions),
-                  // child: LayerInteractionButton(
-                  //   rotation: -widget.layerData.rotation,
-                  //   onScaleRotateDown: interactions.scaleRotateDown,
-                  //   onScaleRotateUp: interactions.scaleRotateUp,
-                  //   buttonRadius: layerInteraction.style.buttonRadius,
-                  //   cursor: layerInteraction.style.rotateScaleCursor,
-                  //   icon: Icons.sync,
-                  //   tooltip: i18n.layerInteraction.rotateScale,
-                  //   color: layerInteraction.style.buttonScaleRotateColor,
-                  //   background:
-                  //       layerInteraction.style.buttonScaleRotateBackground,
-                  // ),
-                ),
-              ),
+            // if (widget.insideGroup == false &&
+            //     !widget.layerData.interaction.isLocked)
+            //   ReactiveWidget(
+            //     stream: _rebuildStream.stream,
+            //     builder: (_) => Positioned(
+            //       bottom: -40,
+            //       child: _buildRotateScaleIcon(interactions),
+            //       // child: LayerInteractionButton(
+            //       //   rotation: -widget.layerData.rotation,
+            //       //   onScaleRotateDown: interactions.scaleRotateDown,
+            //       //   onScaleRotateUp: interactions.scaleRotateUp,
+            //       //   buttonRadius: layerInteraction.style.buttonRadius,
+            //       //   cursor: layerInteraction.style.rotateScaleCursor,
+            //       //   icon: Icons.sync,
+            //       //   tooltip: i18n.layerInteraction.rotateScale,
+            //       //   color: layerInteraction.style.buttonScaleRotateColor,
+            //       //   background:
+            //       //       layerInteraction.style.buttonScaleRotateBackground,
+            //       // ),
+            //     ),
+            //   ),
             // ...children.map(
             //   (item) => item.call(
             //     _rebuildStream.stream,
