@@ -151,6 +151,9 @@ class StateManager {
   /// List of captured screenshots for each state in the history.
   List<ThreadCaptureState> screenshots = [];
 
+  /// The opacity of the background image in the editor.
+  double backgroundOpacity = 1.0;
+
   /// Retrieves the currently active screenshot based on the position.
   ThreadCaptureState? get activeScreenshot {
     var historyPos = _historyPointer - 1;

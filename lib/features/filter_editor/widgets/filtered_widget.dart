@@ -27,6 +27,7 @@ class FilteredWidget extends StatelessWidget {
     this.fit = BoxFit.contain,
     this.image,
     this.videoPlayer,
+    this.opacity = 1.0,
   }) : assert(image != null || videoPlayer != null,
             'Image and video player cannot be null');
 
@@ -64,36 +65,43 @@ class FilteredWidget extends StatelessWidget {
   /// The blur factor
   final double blurFactor;
 
+  /// The opacity of the widget. Defaults to 1.0.
+  final double opacity;
+
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      width: width,
-      height: height,
-      child: Stack(
-        // StackFit.expand is important for [transformed_content_generator.dart]
-        fit: StackFit.expand,
-        alignment: Alignment.center,
-        children: [
-          _buildContent(),
-          ColorFilterGenerator(
-            key: filterKey,
-            filters: filters,
-            tuneAdjustments: tuneAdjustments,
-            child: _buildContent(),
-          ),
-          ClipRect(
-            clipBehavior: Clip.hardEdge,
-            child: BackdropFilter(
-              filter: ImageFilter.blur(sigmaX: blurFactor, sigmaY: blurFactor),
-              child: Container(
-                width: width,
-                height: height,
-                alignment: Alignment.center,
-                color: Colors.white.withValues(alpha: 0.0),
+    return Opacity(
+      opacity: opacity,
+      child: SizedBox(
+        width: width,
+        height: height,
+        child: Stack(
+          // StackFit.expand is important for [transformed_content_generator.dart]
+          fit: StackFit.expand,
+          alignment: Alignment.center,
+          children: [
+            _buildContent(),
+            ColorFilterGenerator(
+              key: filterKey,
+              filters: filters,
+              tuneAdjustments: tuneAdjustments,
+              child: _buildContent(),
+            ),
+            ClipRect(
+              clipBehavior: Clip.hardEdge,
+              child: BackdropFilter(
+                filter:
+                    ImageFilter.blur(sigmaX: blurFactor, sigmaY: blurFactor),
+                child: Container(
+                  width: width,
+                  height: height,
+                  alignment: Alignment.center,
+                  color: Colors.white.withValues(alpha: 0.0),
+                ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
