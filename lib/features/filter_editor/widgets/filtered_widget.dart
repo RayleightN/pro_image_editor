@@ -65,7 +65,7 @@ class FilteredWidget extends StatelessWidget {
   /// The blur factor
   final double blurFactor;
 
-  /// The opacity of the widget. Defaults to 1.0.
+  /// The opacity of the widget.
   final double opacity;
 
   @override
