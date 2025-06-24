@@ -27,7 +27,7 @@ class TransformedContentGenerator extends StatefulWidget {
   /// Configuration object for the image editor.
   final ProImageEditorConfigs configs;
 
-  /// Indicateds if the child is a video player.
+  /// Indicateds if the child is a video player..
   final bool isVideoPlayer;
 
   @override
